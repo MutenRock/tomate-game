@@ -1,38 +1,80 @@
 # Tomate !
 
-> Un jeu multijoueur asymétrique autour d'une pièce de théâtre qui doit survivre à ses comédiens, sa régie et son public.
+> Un jeu multijoueur asymétrique autour d'une représentation qui doit survivre à son comédien, à sa régie et à son public.
 
-**Tomate !** est un jeu de théâtre chaotique jouable entre amis. Selon le mode, les joueurs deviennent comédiens, metteur en scène, régisseur, accessoiriste ou membres du public. Ils disposent de quelques secondes pour préparer une représentation, puis doivent sauver le spectacle malgré les erreurs, les contraintes et les réactions du public.
+**Tomate !** est un jeu de performance chaotique jouable entre amis. Selon le mode, les joueurs deviennent comédiens, metteur en scène, régisseur, accessoiriste ou membres du public. Ils disposent de quelques secondes pour se préparer, puis doivent sauver le spectacle malgré les erreurs, les contraintes et les réactions de la salle.
 
-## Vision
+## Prototype multijoueur v0.2
 
-Le jeu doit produire des histoires que les joueurs auront envie de raconter après la partie :
+Le dépôt contient désormais un premier prototype jouable du mode **Lecture sous pression** :
 
-- une entrée déclenchée trop tôt ;
-- un micro coupé pendant une confession ;
-- une tomate qui masque la réplique essentielle ;
-- un comédien qui improvise une explication absurde ;
-- un public qui récompense finalement la catastrophe.
+- un comédien et jusqu'à onze membres du public ;
+- création et connexion à une salle avec un code court ;
+- écrans différents pour le comédien et le public ;
+- six scènes et six réactions ;
+- briefing, préparation, représentation, finale et verdict ;
+- synchronisation en temps réel par Server-Sent Events ;
+- énergie individuelle, temps de recharge et budget de gêne ;
+- score de continuité, récupération, participation du public et finale ;
+- interface responsive pour ordinateur et téléphone ;
+- aucune dépendance NPM.
 
-Le chaos n'est pas seulement aléatoire : il naît surtout des erreurs, des informations partielles et des réactions en chaîne.
+La voix reste volontairement sur Discord ou dans la même pièce. Aucune voix n'est enregistrée.
+
+## Lancer le prototype
+
+Prérequis : **Node.js 20 ou plus récent**.
+
+### Windows
+
+Double-cliquer sur :
+
+```text
+start_windows.bat
+```
+
+Le terminal affiche :
+
+- une adresse **Local** pour le PC du comédien ;
+- une ou plusieurs adresses **Réseau** pour les téléphones connectés au même Wi-Fi.
+
+Le pare-feu Windows peut demander d'autoriser Node.js sur les réseaux privés lors du premier lancement.
+
+### Terminal
+
+```bash
+npm run dev
+```
+
+Adresse locale par défaut :
+
+```text
+http://localhost:4173
+```
+
+### Tester seul
+
+Ouvrir deux onglets :
+
+1. créer une salle dans le premier ;
+2. rejoindre la salle comme public dans le second.
+
+Chaque onglet conserve une session distincte.
+
+## Vérifications
+
+```bash
+npm run check
+npm run smoke
+```
+
+Le smoke test vérifie la création d'une salle, l'arrivée du public, les phases, une tomate, une récupération, la progression du texte et le verdict.
 
 ## Nature du jeu
 
 Tomate ! est principalement un jeu **multijoueur asymétrique et simultané** : chaque rôle possède une interface, des informations et des responsabilités différentes pendant la même représentation.
 
-Des modes réellement asynchrones sont également prévus. Dans **Téléphone théâtral**, par exemple, chaque joueur poursuit une scène à partir d'un fragment de la contribution précédente avant de découvrir le montage final.
-
-## Premier objectif
-
-Construire un **prototype navigateur** centré sur le mode **Lecture sous pression** :
-
-1. un joueur lit et interprète un texte ;
-2. les autres joueurs incarnent le public ;
-3. le public déclenche des perturbations et des encouragements ;
-4. la représentation se termine par un verdict et des récompenses narratives ;
-5. le rôle de comédien tourne entre les manches.
-
-La voix peut rester sur Discord pendant les premiers tests. Le prototype ne dépend pas d'une reconnaissance vocale ou d'un service d'IA.
+Des modes réellement asynchrones sont aussi envisagés, notamment **Téléphone théâtral**, dans lequel chaque joueur poursuit une scène à partir d'un fragment de la contribution précédente.
 
 ## Modes envisagés
 
@@ -45,61 +87,17 @@ La voix peut rester sur Discord pendant les premiers tests. Le prototype ne dép
 - **Mauvais régisseur** — la technique poursuit des objectifs secrets ;
 - **Doublage catastrophique** — doublage sous contraintes et perturbations ;
 - **Téléphone théâtral** — création asynchrone assemblée à la fin ;
-- **Répetition contre public** — une équipe prépare, l'autre orchestre le chaos ;
+- **Répétition contre public** — une équipe prépare, l'autre orchestre le chaos ;
 - **Public contre IA** — personnages secondaires ou public simulés ;
 - **Atelier créateur** — pièces et packs personnalisés.
 
-## État actuel
-
-Le dépôt contient :
-
-- une maquette locale jouable sans dépendances ;
-- quatre variantes de scène ;
-- un prompteur, un minuteur et une humeur du public ;
-- des tomates visuelles et plusieurs réactions ;
-- une documentation de game design ;
-- une architecture cible pour le multijoueur ;
-- une spécification précise du premier MVP ;
-- un système proposé de score et de verdict ;
-- des règles d'accessibilité et d'anti-acharnement ;
-- un protocole de playtest ;
-- un registre des décisions produit.
-
-Le réseau, les salons et la synchronisation multijoueur ne sont pas encore implémentés.
-
-## Lancer la maquette
-
-Prérequis : Node.js 20 ou plus récent.
-
-```bash
-npm run dev
-```
-
-Puis ouvrir :
-
-```text
-http://localhost:4173
-```
-
-Aucune installation de dépendances n'est nécessaire.
-
-### Sous Windows avec Git Bash
-
-```bash
-git clone https://github.com/MutenRock/tomate-game.git
-cd tomate-game
-npm run dev
-```
-
-## Vérifier le dépôt
-
-```bash
-npm run check
-```
-
-Cette commande vérifie la présence des principaux fichiers et le nom du package.
-
 ## Documentation
+
+### Prototype
+
+- [Prototype multijoueur V1](docs/PROTOTYPE_V1.md)
+- [Installation rapide](INSTALLATION_RAPIDE.txt)
+- [Changelog](CHANGELOG.md)
 
 ### Game design
 
@@ -127,46 +125,36 @@ Cette commande vérifie la présence des principaux fichiers et le nom du packag
 - [Glossaire](docs/10-glossary.md)
 - [Guide de contribution](CONTRIBUTING.md)
 
-## Principes de conception
-
-1. **Une partie doit rester compréhensible même lorsqu'elle déraille.**
-2. **Le public joue réellement : il ne se contente pas de regarder.**
-3. **Une erreur doit créer une nouvelle opportunité de jeu.**
-4. **Chaque rôle possède des informations et des responsabilités différentes.**
-5. **Le jeu doit fonctionner avec très peu de joueurs avant de viser les grandes salles.**
-6. **L'IA enrichit le contenu, mais le cœur du jeu doit fonctionner sans elle.**
-7. **Le verdict récompense la récupération plutôt qu'un talent théâtral supposé.**
-8. **Une perturbation possède toujours une limite et un contre-jeu.**
-
-## Architecture envisagée
-
-- frontend TypeScript adapté à chaque rôle ;
-- application web responsive et installable ;
-- téléphone prioritaire pour le public ;
-- serveur Node.js autoritaire ;
-- communication temps réel par WebSocket ;
-- journal d'événements pour la reconnexion et le verdict ;
-- WebRTC et transcription seulement après validation de la boucle principale.
-
-## Structure du dépôt
+## Structure
 
 ```text
-.
-├── .github/                 Modèles d'issues, PR et workflow de vérification
-├── docs/                    Documentation de conception et technique
-├── prototype/               Maquette locale sans dépendances
-├── scripts/                 Vérifications du dépôt
-├── CONTRIBUTING.md
-├── package.json
-└── README.md
+content/             Scènes et réactions en JSON
+public/              Interface navigateur multijoueur
+server/              Serveur HTTP/SSE et moteur de partie
+prototype/           Première maquette locale conservée comme référence
+scripts/             Vérifications et smoke test
+docs/                Game design et documentation produit
 ```
 
-## Statut
+## Limites actuelles
 
-Préproduction / exploration du concept.
+- salles conservées uniquement en mémoire ;
+- un seul comédien à la fois ;
+- pas de compte ni de sauvegarde persistante ;
+- pas d'audio intégré, de reconnaissance vocale ou d'IA générative ;
+- pas de matchmaking ni d'exposition Internet automatique ;
+- rotation du comédien encore manuelle.
 
-La priorité suivante est de tester la maquette avec plusieurs groupes, puis de construire le vertical slice multijoueur du mode **Lecture sous pression**.
+## Principes de conception
+
+1. Une partie reste compréhensible même lorsqu'elle déraille.
+2. Le public joue réellement : il ne se contente pas de regarder.
+3. Une erreur crée une nouvelle opportunité de jeu.
+4. Chaque rôle possède des informations et responsabilités différentes.
+5. Le verdict récompense la récupération plutôt qu'un talent théâtral supposé.
+6. Une perturbation possède toujours une limite et un contre-jeu.
+7. L'IA peut enrichir le contenu, mais le cœur du jeu fonctionne sans elle.
 
 ## Licence
 
-Aucune licence open source n'a encore été choisie. Tous droits réservés par défaut. La licence du code, des textes, des packs communautaires et des éventuels enregistrements devra être décidée avant l'ouverture large aux contributions.
+Aucune licence open source n'a encore été choisie. Tous droits réservés par défaut.

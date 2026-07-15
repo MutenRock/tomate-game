@@ -20,3 +20,5 @@ jobs:
           node-version: 20
       - name: Check repository
         run: npm run check
+      - name: Smoke test
+        run: npm run smoke
