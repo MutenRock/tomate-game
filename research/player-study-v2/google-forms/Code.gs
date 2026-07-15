@@ -1,8 +1,8 @@
 /**
  * Tomate ! — Étude joueurs V2
  *
- * Ajouter également Questions_01_25.gs et Questions_26_51.gs au même projet
- * Google Apps Script avant d'exécuter createPlayerStudyQuestionnaire().
+ * Ajouter également Bootstrap.gs, Questions_01_25.gs et
+ * Questions_26_51.gs au même projet Google Apps Script.
  */
 
 const STUDY_CONFIG = Object.freeze({
@@ -20,13 +20,13 @@ const STUDY_CONFIG = Object.freeze({
 });
 
 const PRIORITY_QUESTIONS = new Set([15, 22, 23, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 43, 46, 47, 48]);
-const STUDY_SECTIONS = [...STUDY_SECTIONS_01_25, ...STUDY_SECTIONS_26_51];
 
 function createPlayerStudyQuestionnaire() {
-  validateQuestionnaireDefinition_();
+  const studySections = getPlayerStudySections_();
+  validateQuestionnaireDefinition_(studySections);
 
   const spreadsheet = SpreadsheetApp.create(STUDY_CONFIG.spreadsheetTitle);
-  prepareAnalysisWorkbook_(spreadsheet);
+  prepareAnalysisWorkbook_(spreadsheet, studySections);
 
   const form = FormApp.create(STUDY_CONFIG.formTitle);
   form
@@ -38,7 +38,7 @@ function createPlayerStudyQuestionnaire() {
     .setLimitOneResponsePerUser(false)
     .setConfirmationMessage(STUDY_CONFIG.confirmationMessage);
 
-  STUDY_SECTIONS.forEach((studySection, sectionIndex) => {
+  studySections.forEach((studySection, sectionIndex) => {
     const page = form.addPageBreakItem().setTitle(studySection.title);
     if (sectionIndex === 0) {
       page.setHelpText('Les réponses libres et les informations personnelles facultatives peuvent être laissées vides.');
@@ -50,8 +50,8 @@ function createPlayerStudyQuestionnaire() {
     .setTitle('Merci pour votre participation')
     .setHelpText('Vos réponses serviront à identifier les mécaniques les plus attirantes, les principaux freins et les formats de partie adaptés aux différents groupes de joueurs.');
 
-  // Important : la destination est définie en dernier. Aucun onglet n'est
-  // modifié après cette ligne, notamment l'onglet protégé des réponses Forms.
+  // La destination est définie en dernier. Aucun onglet n’est modifié après
+  // cette ligne, notamment l’onglet protégé créé par Google Forms.
   form.setDestination(FormApp.DestinationType.SPREADSHEET, spreadsheet.getId());
 
   const links = {
@@ -87,7 +87,7 @@ function showLastCreatedLinks() {
 }
 
 function validateQuestionnaireDefinition() {
-  const result = validateQuestionnaireDefinition_();
+  const result = validateQuestionnaireDefinition_(getPlayerStudySections_());
   Logger.log('Questionnaire valide : %s questions dans %s sections.', result.questionCount, result.sectionCount);
   return result;
 }
@@ -118,9 +118,7 @@ function addQuestionToForm_(form, question) {
       }
       break;
     case 'grid':
-      item = form.addGridItem()
-        .setRows(question.rows)
-        .setColumns(question.columns);
+      item = form.addGridItem().setRows(question.rows).setColumns(question.columns);
       break;
     case 'scale':
       item = form.addScaleItem()
@@ -137,9 +135,7 @@ function addQuestionToForm_(form, question) {
   return item;
 }
 
-function prepareAnalysisWorkbook_(spreadsheet) {
-  // Cette feuille existe avant la liaison à Google Forms : elle peut donc être
-  // mise en forme sans risquer de modifier l'onglet de réponses protégé.
+function prepareAnalysisWorkbook_(spreadsheet, studySections) {
   const guide = spreadsheet.getSheets()[0];
   guide.setName('Guide d’analyse');
   guide.clear();
@@ -176,7 +172,7 @@ function prepareAnalysisWorkbook_(spreadsheet) {
 
   const codebook = spreadsheet.insertSheet('Dictionnaire des questions');
   const rows = [['ID', 'Section', 'Question', 'Type', 'Obligatoire', 'Prioritaire']];
-  STUDY_SECTIONS.forEach((studySection) => {
+  studySections.forEach((studySection) => {
     studySection.questions.forEach((question) => {
       rows.push([
         question.id,
@@ -201,8 +197,8 @@ function prepareAnalysisWorkbook_(spreadsheet) {
   codebook.setFrozenRows(1);
 }
 
-function validateQuestionnaireDefinition_() {
-  const questions = STUDY_SECTIONS.flatMap((studySection) => studySection.questions);
+function validateQuestionnaireDefinition_(studySections) {
+  const questions = studySections.flatMap((studySection) => studySection.questions);
   const ids = questions.map((question) => question.id);
 
   if (questions.length !== 51) {
@@ -229,7 +225,7 @@ function validateQuestionnaireDefinition_() {
     }
   });
 
-  return { questionCount: questions.length, sectionCount: STUDY_SECTIONS.length };
+  return { questionCount: questions.length, sectionCount: studySections.length };
 }
 
 function logLinks_(links) {
