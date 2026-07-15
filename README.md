@@ -1,25 +1,41 @@
 # Tomate !
 
-> Un jeu multijoueur asymétrique autour d'une représentation qui doit survivre à son comédien, à sa régie et à son public.
+> Un jeu multijoueur asymétrique autour d'une représentation qui doit survivre à ses comédiens, à sa régie et à son public.
 
 **Tomate !** est un jeu de performance chaotique jouable entre amis. Selon le mode, les joueurs deviennent comédiens, metteur en scène, régisseur, accessoiriste ou membres du public. Ils disposent de quelques secondes pour se préparer, puis doivent sauver le spectacle malgré les erreurs, les contraintes et les réactions de la salle.
 
-## Prototype multijoueur v0.2
+## Prototype multijoueur v0.3
 
-Le dépôt contient désormais un premier prototype jouable du mode **Lecture sous pression** :
+La v0.3 transforme la première démonstration en véritable prototype de lecture théâtrale :
 
-- un comédien et jusqu'à onze membres du public ;
+- mode **solo**, avec un comédien interprétant les deux personnages ;
+- mode **duo**, avec un rôle et un objectif secret différents pour chaque comédien ;
+- jusqu'à dix autres joueurs dans le public ;
+- six histoires longues, structurées en quatre actes ;
+- **96 répliques** au total et une durée cible de six à huit minutes par histoire ;
+- indication synchronisée du tour de parole ;
+- séparation visuelle entre la didascalie, l'intention, le texte à lire et l'action suivante ;
+- aperçu de la réplique précédente et de la prochaine intervention ;
 - création et connexion à une salle avec un code court ;
-- écrans différents pour le comédien et le public ;
-- six scènes et six réactions ;
+- réactions du public, énergie, temps de recharge et budget de gêne ;
 - briefing, préparation, représentation, finale et verdict ;
-- synchronisation en temps réel par Server-Sent Events ;
-- énergie individuelle, temps de recharge et budget de gêne ;
-- score de continuité, récupération, participation du public et finale ;
+- score de continuité, récupération, participation du public, conclusion et équilibre du duo ;
 - interface responsive pour ordinateur et téléphone ;
 - aucune dépendance NPM.
 
 La voix reste volontairement sur Discord ou dans la même pièce. Aucune voix n'est enregistrée.
+
+## Comprendre l'écran comédien
+
+Pendant une réplique, l'interface sépare cinq informations :
+
+1. **Ne pas lire — Didascalie** : le mouvement ou l'action à jouer ;
+2. **Intention de jeu** : l'émotion et le rythme recommandés ;
+3. **Texte à dire à voix haute** : la seule zone à lire ;
+4. **Après la réplique** : ce qu'il faut faire avant de passer la parole ;
+5. **Repère de scène** : une indication de rythme ou une fenêtre pour le public.
+
+En duo, une bannière affiche clairement **À toi — lis maintenant** ou **Attends — l'autre comédien parle**. Le serveur refuse qu'un joueur valide la réplique de l'autre.
 
 ## Lancer le prototype
 
@@ -35,8 +51,8 @@ start_windows.bat
 
 Le terminal affiche :
 
-- une adresse **Local** pour le PC du comédien ;
-- une ou plusieurs adresses **Réseau** pour les téléphones connectés au même Wi-Fi.
+- une adresse **Local** pour le PC de l'hôte ;
+- une ou plusieurs adresses **Réseau** pour les autres joueurs connectés au même Wi-Fi.
 
 Le pare-feu Windows peut demander d'autoriser Node.js sur les réseaux privés lors du premier lancement.
 
@@ -54,10 +70,16 @@ http://localhost:4173
 
 ### Tester seul
 
-Ouvrir deux onglets :
+Pour le mode solo, ouvrir deux onglets :
 
-1. créer une salle dans le premier ;
+1. créer une salle avec **1 comédien** dans le premier ;
 2. rejoindre la salle comme public dans le second.
+
+Pour simuler un duo, ouvrir trois onglets :
+
+1. créer une salle avec **2 comédiens** ;
+2. rejoindre comme **Comédien 2** ;
+3. rejoindre comme public.
 
 Chaque onglet conserve une session distincte.
 
@@ -68,7 +90,7 @@ npm run check
 npm run smoke
 ```
 
-Le smoke test vérifie la création d'une salle, l'arrivée du public, les phases, une tomate, une récupération, la progression du texte et le verdict.
+Le check valide les six histoires, les deux personnages par histoire et un minimum de quatre-vingt-dix répliques. Le smoke test joue automatiquement une partie solo puis une partie duo complète.
 
 ## Nature du jeu
 
@@ -79,8 +101,8 @@ Des modes réellement asynchrones sont aussi envisagés, notamment **Téléphone
 ## Modes envisagés
 
 - **Lecture sous pression** — un comédien, tous les autres dans le public ;
-- **Seul en scène** — un joueur interprète plusieurs personnages ;
 - **Duo catastrophe** — deux comédiens aux informations incomplètes ;
+- **Seul en scène** — un joueur interprète plusieurs personnages ;
 - **Théâtre asymétrique complet** — comédiens, régisseur, metteur en scène et accessoiriste ;
 - **Improvisation publique** — le public choisit les rebondissements ;
 - **Pièce tournante** — les rôles passent d'un joueur à l'autre ;
@@ -95,7 +117,8 @@ Des modes réellement asynchrones sont aussi envisagés, notamment **Téléphone
 
 ### Prototype
 
-- [Prototype multijoueur V1](docs/PROTOTYPE_V1.md)
+- [Prototype multijoueur V0.3](docs/PROTOTYPE_V3.md)
+- [Prototype multijoueur V0.2](docs/PROTOTYPE_V1.md)
 - [Installation rapide](INSTALLATION_RAPIDE.txt)
 - [Changelog](CHANGELOG.md)
 
@@ -128,22 +151,26 @@ Des modes réellement asynchrones sont aussi envisagés, notamment **Téléphone
 ## Structure
 
 ```text
-content/             Scènes et réactions en JSON
-public/              Interface navigateur multijoueur
-server/              Serveur HTTP/SSE et moteur de partie
-prototype/           Première maquette locale conservée comme référence
-scripts/             Vérifications et smoke test
-docs/                Game design et documentation produit
+content/
+├── reactions.json           Réactions du public
+├── scenes.json              Anciennes scènes v0.2 conservées
+└── scenes-v3/               Six histoires longues v0.3
+public/                       Interface navigateur multijoueur
+server/                       Serveur HTTP/SSE et moteur de partie
+prototype/                    Première maquette locale conservée comme référence
+scripts/                      Vérifications et smoke test
+docs/                         Game design et documentation produit
 ```
 
 ## Limites actuelles
 
 - salles conservées uniquement en mémoire ;
-- un seul comédien à la fois ;
+- maximum de deux comédiens simultanés ;
+- pas de remplacement automatique d'un comédien pendant une représentation ;
 - pas de compte ni de sauvegarde persistante ;
 - pas d'audio intégré, de reconnaissance vocale ou d'IA générative ;
 - pas de matchmaking ni d'exposition Internet automatique ;
-- rotation du comédien encore manuelle.
+- le public cible automatiquement le personnage actuellement actif.
 
 ## Principes de conception
 
