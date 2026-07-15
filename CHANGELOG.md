@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.3.1 — Préparation des playtests
+
+- ajout d'une scène tutoriel guidée de deux à trois minutes ;
+- état prêt obligatoire avant le lancement ;
+- suivi des joueurs connectés et déconnectés ;
+- pause automatique lorsqu'un comédien se déconnecte ;
+- code de reprise pour récupérer sa place sur un autre appareil ;
+- remplacement d'un comédien absent par un membre du public ;
+- réactions affichant leur expéditeur, leur cible et leur durée ;
+- questionnaire de fin directement intégré au jeu ;
+- export d'un rapport JSON anonymisé ;
+- smoke test couvrant l'état prêt, la reconnexion, le feedback et le rapport.
+
 ## 0.3.0 — Lecture guidée et duo de comédiens
 
 - nouvelle interface centrée sur la lisibilité et le tour de parole ;
