@@ -1,0 +1,62 @@
+[
+  {
+    "id": "tomato",
+    "label": "Tomate",
+    "description": "Masque une zone du prompteur pendant 12 secondes.",
+    "cost": 1,
+    "cooldownMs": 3000,
+    "kind": "visual",
+    "durationMs": 12000,
+    "severity": 1
+  },
+  {
+    "id": "dramatic",
+    "label": "Plus dramatique",
+    "description": "Impose une intention beaucoup trop dramatique.",
+    "cost": 1,
+    "cooldownMs": 7000,
+    "kind": "instruction",
+    "durationMs": 12000,
+    "severity": 1
+  },
+  {
+    "id": "phone",
+    "label": "Téléphone dans la salle",
+    "description": "Une sonnerie doit être intégrée à la scène.",
+    "cost": 2,
+    "cooldownMs": 9000,
+    "kind": "audio",
+    "durationMs": 7000,
+    "severity": 1
+  },
+  {
+    "id": "forbidden",
+    "label": "Mot interdit",
+    "description": "Interdit temporairement un mot courant de la scène.",
+    "cost": 2,
+    "cooldownMs": 12000,
+    "kind": "instruction",
+    "durationMs": 15000,
+    "severity": 2
+  },
+  {
+    "id": "blackout",
+    "label": "Micro-coupure",
+    "description": "Assombrit brièvement le prompteur sans le cacher totalement.",
+    "cost": 3,
+    "cooldownMs": 18000,
+    "kind": "visual",
+    "durationMs": 4500,
+    "severity": 2
+  },
+  {
+    "id": "applause",
+    "label": "Applaudissements",
+    "description": "Rend 8 secondes et retire une tomate.",
+    "cost": 2,
+    "cooldownMs": 10000,
+    "kind": "positive",
+    "durationMs": 2500,
+    "severity": 0
+  }
+]
