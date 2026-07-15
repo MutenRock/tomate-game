@@ -1,9 +1,9 @@
 {
-  "name": "Tomate ! Prototype",
+  "name": "Tomate ! — Prototype V0.3",
   "short_name": "Tomate !",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#181312",
-  "theme_color": "#181312",
-  "icons": []
+  "background_color": "#1c1715",
+  "theme_color": "#a72e2e",
+  "lang": "fr"
 }

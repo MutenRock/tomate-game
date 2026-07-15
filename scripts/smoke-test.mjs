@@ -13,35 +13,59 @@ server.stderr.on("data", (chunk) => { output += chunk; });
 
 try {
   await waitForServer();
-  const actor = await request("/api/rooms", { name: "Test Actor" });
-  const audience = await request(`/api/rooms/${actor.roomCode}/join`, { name: "Test Public" });
+  await testSoloRoom();
+  await testDuoRoom();
+  console.log("Smoke test passed — modes solo et duo validés.");
+} finally {
+  server.kill("SIGTERM");
+}
 
-  const command = (session, type, payload = {}) => request(`/api/rooms/${actor.roomCode}/commands`, {
+async function testSoloRoom() {
+  const actor = await request("/api/rooms", { name: "Solo Actor", actorSlots: 1 });
+  const audience = await request(`/api/rooms/${actor.roomCode}/join`, { name: "Solo Public", role: "audience" });
+  const send = commander(actor.roomCode);
+
+  let actorState = await send(actor, "START_MATCH");
+  actorState = await send(actor, "ADVANCE_PHASE");
+  actorState = await send(actor, "ADVANCE_PHASE");
+  const reaction = await send(audience, "REACTION", { reactionId: "tomato" });
+  if (!reaction.effects.some((effect) => effect.type === "tomato")) throw new Error("La tomate solo n'a pas été résolue.");
+  await send(actor, "RECOVERED");
+
+  const totalLines = actorState.scene.lineCount;
+  for (let index = 0; index < totalLines; index += 1) actorState = await send(actor, "NEXT_LINE");
+  if (actorState.phase !== "verdict" || !actorState.verdict) throw new Error("Le verdict solo n'a pas été généré.");
+}
+
+async function testDuoRoom() {
+  const actorOne = await request("/api/rooms", { name: "Actor One", actorSlots: 2 });
+  const actorTwo = await request(`/api/rooms/${actorOne.roomCode}/join`, { name: "Actor Two", role: "actor" });
+  const audience = await request(`/api/rooms/${actorOne.roomCode}/join`, { name: "Duo Public", role: "audience" });
+  const send = commander(actorOne.roomCode);
+
+  let state = await send(actorOne, "START_MATCH");
+  state = await send(actorOne, "ADVANCE_PHASE");
+  state = await send(actorOne, "ADVANCE_PHASE");
+  await send(audience, "REACTION", { reactionId: "dramatic" });
+
+  const sessions = new Map([[actorOne.playerId, actorOne], [actorTwo.playerId, actorTwo]]);
+  const totalLines = state.scene.lineCount;
+  for (let index = 0; index < totalLines; index += 1) {
+    const currentActor = sessions.get(state.activeActorId);
+    if (!currentActor) throw new Error(`Aucun comédien ne correspond au tour ${index + 1}.`);
+    state = await send(currentActor, "NEXT_LINE");
+  }
+  if (state.phase !== "verdict" || !state.verdict) throw new Error("Le verdict duo n'a pas été généré.");
+  if (state.verdict.castBalance <= 0) throw new Error("Le score de duo n'a pas été calculé.");
+}
+
+function commander(roomCode) {
+  return (session, type, payload = {}) => request(`/api/rooms/${roomCode}/commands`, {
     playerId: session.playerId,
     token: session.token,
     type,
     payload
   });
-
-  await command(actor, "START_MATCH");
-  await command(actor, "ADVANCE_PHASE");
-  await command(actor, "ADVANCE_PHASE");
-  const reaction = await command(audience, "REACTION", { reactionId: "tomato" });
-
-  if (reaction.phase !== "performance") throw new Error("La phase performance n'est pas active.");
-  if (!reaction.effects.some((effect) => effect.type === "tomato")) throw new Error("La tomate n'a pas été résolue.");
-
-  await command(actor, "RECOVERED");
-  await command(actor, "NEXT_LINE");
-  await command(actor, "NEXT_LINE");
-  await command(actor, "NEXT_LINE");
-  await command(actor, "NEXT_LINE");
-  const verdict = await command(actor, "NEXT_LINE");
-
-  if (verdict.phase !== "verdict" || !verdict.verdict) throw new Error("Le verdict n'a pas été généré.");
-  console.log(`Smoke test passed — salle ${actor.roomCode}, score ${verdict.verdict.total}/100.`);
-} finally {
-  server.kill("SIGTERM");
 }
 
 async function waitForServer() {

@@ -7,7 +7,15 @@ import { createEngine } from "./game-engine.mjs";
 
 const projectRoot = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const publicRoot = join(projectRoot, "public");
-const scenes = JSON.parse(await readFile(join(projectRoot, "content/scenes.json"), "utf8"));
+const sceneFiles = [
+  "pizza-trial-v3.json",
+  "orbital-laundry-v3.json",
+  "ghost-condo-v3.json",
+  "vampire-interview-v3.json",
+  "last-dinner-v3.json",
+  "robot-romance-v3.json"
+];
+const scenes = await Promise.all(sceneFiles.map(async (file) => JSON.parse(await readFile(join(projectRoot, "content/scenes-v3", file), "utf8"))));
 const reactions = JSON.parse(await readFile(join(projectRoot, "content/reactions.json"), "utf8"));
 const clients = new Map();
 const port = Number(process.env.PORT || 4173);
@@ -19,16 +27,16 @@ const mime = { ".html":"text/html; charset=utf-8", ".css":"text/css; charset=utf
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-    if (url.pathname === "/api/health" && req.method === "GET") return json(res, 200, { ok:true, rooms:clients.size, version:"0.2.0" });
+    if (url.pathname === "/api/health" && req.method === "GET") return json(res, 200, { ok:true, rooms:clients.size, version:"0.3.0" });
     if (url.pathname === "/api/rooms" && req.method === "POST") {
-      const body = await bodyJson(req); const { room, player } = engine.createRoom(body.name);
+      const body = await bodyJson(req); const { room, player } = engine.createRoom(body.name, body.actorSlots);
       return json(res, 201, session(room, player));
     }
     const match = url.pathname.match(/^\/api\/rooms\/([A-Z0-9]{5})(?:\/(join|state|events|commands))?$/i);
     if (match) {
       const roomCode = match[1].toUpperCase(); const action = match[2] || "public";
       if (action === "public" && req.method === "GET") return json(res, 200, engine.publicRoomState(roomCode));
-      if (action === "join" && req.method === "POST") { const body = await bodyJson(req); const { room, player } = engine.joinRoom(roomCode, body.name); return json(res, 201, session(room, player)); }
+      if (action === "join" && req.method === "POST") { const body = await bodyJson(req); const { room, player } = engine.joinRoom(roomCode, body.name, body.role); return json(res, 201, session(room, player)); }
       if (action === "state" && req.method === "GET") { const { room, player } = engine.authenticate(roomCode, url.searchParams.get("playerId"), url.searchParams.get("token")); return json(res, 200, engine.personalizedState(room, player)); }
       if (action === "commands" && req.method === "POST") { const body = await bodyJson(req); return json(res, 200, engine.command(roomCode, body.playerId, body.token, body.type, body.payload)); }
       if (action === "events" && req.method === "GET") return openEvents(req, res, roomCode, url);
@@ -73,7 +81,7 @@ async function staticFile(res, pathname) {
 }
 function localAddresses() { const values=[]; for (const entries of Object.values(networkInterfaces())) for (const item of entries || []) if (item.family === "IPv4" && !item.internal) values.push(item.address); return [...new Set(values)]; }
 server.listen(port, host, () => {
-  console.log("\n🍅 TOMATE ! — PROTOTYPE MULTIJOUEUR\n");
+  console.log("\n🍅 TOMATE ! — PROTOTYPE MULTIJOUEUR V0.3\n");
   console.log(`Local :   http://localhost:${port}`);
   for (const address of localAddresses()) console.log(`Réseau :  http://${address}:${port}`);
   console.log("\nOuvrez l’adresse Réseau sur les téléphones connectés au même Wi-Fi.\n");
