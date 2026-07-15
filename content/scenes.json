@@ -1,0 +1,218 @@
+[
+  {
+    "id": "pizza-trial",
+    "title": "Le procès de la dernière part",
+    "theme": "Procès médiéval absurde",
+    "durationSeconds": 115,
+    "actorBrief": "Vous êtes le Roi. Accusez les autres sans révéler que vous avez mangé la dernière part.",
+    "audienceBrief": "Le Roi cache quelque chose. Déstabilisez-le sans rendre la scène impossible à suivre.",
+    "secretGoal": "Cacher votre culpabilité jusqu’à la dernière réplique.",
+    "forbiddenWords": [
+      "pizza",
+      "fromage",
+      "coupable"
+    ],
+    "lines": [
+      {
+        "speaker": "LE ROI — solennel, mais nerveux",
+        "text": "Que le coupable se dénonce avant le coucher du soleil. Le royaume ne survivra pas à une nouvelle nuit sans pizza.",
+        "cue": "Tonnerre après « royaume »"
+      },
+      {
+        "speaker": "LE ROI — de plus en plus suspect",
+        "text": "Je n’accuse personne, mais le chevalier portait hier une armure qui sentait étrangement le fromage fondu.",
+        "cue": "Lumière rouge sur le chevalier"
+      },
+      {
+        "speaker": "LE ROI — confession contrariée",
+        "text": "Je dois pourtant vous révéler que cette nuit, dans les cuisines, j’ai aperçu une silhouette couronnée.",
+        "cue": "Couper le micro après « cuisines »"
+      },
+      {
+        "speaker": "LE ROI — conclusion improvisée",
+        "text": "Cette affaire est close. La dernière part sera désormais gardée jour et nuit par la garde royale.",
+        "cue": "Rideau dès la fin de la phrase"
+      }
+    ]
+  },
+  {
+    "id": "ghost-meeting",
+    "title": "La réunion des fantômes",
+    "theme": "Copropriété surnaturelle",
+    "durationSeconds": 120,
+    "actorBrief": "Vous présidez une réunion de copropriété hantée. Vous devez maintenir un semblant de sérieux.",
+    "audienceBrief": "La réunion doit dégénérer progressivement, mais rester compréhensible.",
+    "secretGoal": "Convaincre le public que vous êtes la seule personne encore vivante.",
+    "forbiddenWords": [
+      "fantôme",
+      "mort",
+      "chaînes"
+    ],
+    "lines": [
+      {
+        "speaker": "MADAME BRUME — faussement polie",
+        "text": "Avant de parler des murs qui saignent, j’aimerais revenir sur le bruit de chaînes après vingt-deux heures.",
+        "cue": "Un voisin frappe à la porte"
+      },
+      {
+        "speaker": "MADAME BRUME — irritée",
+        "text": "Ces manifestations nocturnes font baisser la valeur de l’immeuble et perturbent considérablement mon sommeil.",
+        "cue": "Bruit de hurlement très lointain"
+      },
+      {
+        "speaker": "MADAME BRUME — troublée",
+        "text": "Je viens de comprendre que personne ici ne respire depuis le début de cette réunion.",
+        "cue": "Lumière froide générale"
+      },
+      {
+        "speaker": "MADAME BRUME — conclusion administrative",
+        "text": "La résolution est donc adoptée : toute possession démoniaque devra désormais être déclarée au syndic.",
+        "cue": "Applaudissements administratifs"
+      }
+    ]
+  },
+  {
+    "id": "space-laundromat",
+    "title": "Opéra spatial à la laverie",
+    "theme": "Science-fiction lyrique",
+    "durationSeconds": 110,
+    "actorBrief": "Vous êtes capitaine d’un vaisseau immobilisé dans une laverie orbitale.",
+    "audienceBrief": "Transformez une panne banale en épopée cosmique.",
+    "secretGoal": "Faire croire que la machine numéro 7 est un ancien artefact extraterrestre.",
+    "forbiddenWords": [
+      "machine",
+      "linge",
+      "chaussette"
+    ],
+    "lines": [
+      {
+        "speaker": "CAPITAINE NOVA — héroïque",
+        "text": "Équipage, le cycle d’essorage est interrompu. Sans lui, nous manquerons la fenêtre de saut interstellaire.",
+        "cue": "Alarme douce"
+      },
+      {
+        "speaker": "CAPITAINE NOVA — mystique",
+        "text": "La machine numéro sept émet un signal que je n’ai entendu qu’une fois, aux confins de la galaxie.",
+        "cue": "Lueur violette pulsée"
+      },
+      {
+        "speaker": "CAPITAINE NOVA — bouleversé",
+        "text": "Cette chaussette solitaire n’est pas perdue. Elle attendait simplement que nous la ramenions chez elle.",
+        "cue": "Musique orchestrale"
+      },
+      {
+        "speaker": "CAPITAINE NOVA — final triomphal",
+        "text": "Lancez le programme délicat. Aujourd’hui, nous ne sauvons pas seulement notre linge, mais deux civilisations.",
+        "cue": "Flash blanc puis rideau"
+      }
+    ]
+  },
+  {
+    "id": "vampire-interview",
+    "title": "Entretien chez les vampires",
+    "theme": "Recrutement horrifique",
+    "durationSeconds": 115,
+    "actorBrief": "Vous postulez pour un emploi de nuit sans admettre que vous avez peur du sang.",
+    "audienceBrief": "Testez la crédibilité du candidat avec des incidents de plus en plus suspects.",
+    "secretGoal": "Obtenir le poste sans prononcer le mot « sang ».",
+    "forbiddenWords": [
+      "sang",
+      "soleil",
+      "ail"
+    ],
+    "lines": [
+      {
+        "speaker": "LE CANDIDAT — professionnel",
+        "text": "Je recherche un poste stable, avec des horaires nocturnes et très peu de contact avec la clientèle vivante.",
+        "cue": "Cloche inquiétante"
+      },
+      {
+        "speaker": "LE CANDIDAT — sourire crispé",
+        "text": "La vue de certaines boissons rouges ne me dérange absolument pas, tant qu’elles sont servies dans une tasse opaque.",
+        "cue": "Zoom dramatique"
+      },
+      {
+        "speaker": "LE CANDIDAT — improvisation urgente",
+        "text": "Mon expérience avec les pieux concerne uniquement la gestion de clôtures agricoles.",
+        "cue": "Grincement de cercueil"
+      },
+      {
+        "speaker": "LE CANDIDAT — conclusion confiante",
+        "text": "Je peux commencer dès ce soir, à condition que le bâtiment possède une sortie de secours orientée vers l’ouest.",
+        "cue": "Signature du contrat"
+      }
+    ]
+  },
+  {
+    "id": "robot-romance",
+    "title": "Amour en électroménager",
+    "theme": "Romance entre robots ménagers",
+    "durationSeconds": 120,
+    "actorBrief": "Vous êtes un aspirateur autonome amoureux d’une bouilloire connectée.",
+    "audienceBrief": "Faites monter la tension romantique et électrique.",
+    "secretGoal": "Déclarer votre amour sans avouer que votre batterie est presque vide.",
+    "forbiddenWords": [
+      "amour",
+      "batterie",
+      "prise"
+    ],
+    "lines": [
+      {
+        "speaker": "UNITÉ R-02 — protocole romantique",
+        "text": "Chaque matin, lorsque tu atteins cent degrés, mes capteurs détectent une anomalie que je ne souhaite pas corriger.",
+        "cue": "Petit bip attendri"
+      },
+      {
+        "speaker": "UNITÉ R-02 — déplacement hésitant",
+        "text": "J’ai cartographié tout cet appartement, pourtant je reviens toujours près de ton plan de travail.",
+        "cue": "Lumière rose maladroite"
+      },
+      {
+        "speaker": "UNITÉ R-02 — alerte énergie",
+        "text": "Si mes roues ralentissent, ce n’est pas par manque de conviction. C’est uniquement une maintenance planifiée.",
+        "cue": "Alerte batterie critique"
+      },
+      {
+        "speaker": "UNITÉ R-02 — dernier effort",
+        "text": "Accepterais-tu de partager ma station de recharge jusqu’à la prochaine mise à jour système ?",
+        "cue": "Confettis numériques"
+      }
+    ]
+  },
+  {
+    "id": "apocalypse-dinner",
+    "title": "Le dernier dîner",
+    "theme": "Drame familial pendant l’apocalypse",
+    "durationSeconds": 125,
+    "actorBrief": "Vous annoncez une mauvaise nouvelle familiale alors que le monde se termine dehors.",
+    "audienceBrief": "Mélangez drame intime et catastrophe globale.",
+    "secretGoal": "Faire accepter votre nouveau métier de clown avant l’impact final.",
+    "forbiddenWords": [
+      "apocalypse",
+      "clown",
+      "météorite"
+    ],
+    "lines": [
+      {
+        "speaker": "ALEX — trop calme",
+        "text": "Avant que le ciel ne devienne entièrement orange, j’aimerais profiter de ce dîner pour vous parler de ma reconversion.",
+        "cue": "Explosion lointaine"
+      },
+      {
+        "speaker": "ALEX — déterminé",
+        "text": "J’ai compris que la comptabilité ne me rendait pas heureux, même avec la fin du monde comme date limite fiscale.",
+        "cue": "Vaisselle qui tremble"
+      },
+      {
+        "speaker": "ALEX — révélation",
+        "text": "J’ai acheté de très grandes chaussures, un nez rouge et une petite voiture qui ne respecte aucune norme de sécurité.",
+        "cue": "Klaxon ridicule"
+      },
+      {
+        "speaker": "ALEX — final sincère",
+        "text": "Je ne peux pas empêcher ce qui arrive dehors, mais je peux au moins vous faire rire une dernière fois.",
+        "cue": "Silence puis applaudissements"
+      }
+    ]
+  }
+]
