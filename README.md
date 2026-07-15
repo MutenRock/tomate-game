@@ -2,28 +2,40 @@
 
 > Un jeu multijoueur asymétrique autour d'une représentation qui doit survivre à ses comédiens, à sa régie et à son public.
 
-**Tomate !** est un jeu de performance chaotique jouable entre amis. Selon le mode, les joueurs deviennent comédiens, metteur en scène, régisseur, accessoiriste ou membres du public. Ils disposent de quelques secondes pour se préparer, puis doivent sauver le spectacle malgré les erreurs, les contraintes et les réactions de la salle.
+**Tomate !** est un jeu de performance chaotique jouable entre amis. Un ou deux comédiens tentent de maintenir une histoire compréhensible pendant que le public les encourage, leur impose des contraintes et lance des perturbations limitées.
 
-## Prototype multijoueur v0.3
+## Prototype playtest v0.3.1
 
-La v0.3 transforme la première démonstration en véritable prototype de lecture théâtrale :
+La v0.3.1 est conçue pour être confiée à un groupe qui ne connaît pas encore le projet :
 
 - mode **solo**, avec un comédien interprétant les deux personnages ;
 - mode **duo**, avec un rôle et un objectif secret différents pour chaque comédien ;
-- jusqu'à dix autres joueurs dans le public ;
-- six histoires longues, structurées en quatre actes ;
-- **96 répliques** au total et une durée cible de six à huit minutes par histoire ;
+- six histoires longues de six à huit minutes ;
+- une scène tutoriel guidée de deux à trois minutes ;
 - indication synchronisée du tour de parole ;
-- séparation visuelle entre la didascalie, l'intention, le texte à lire et l'action suivante ;
-- aperçu de la réplique précédente et de la prochaine intervention ;
-- création et connexion à une salle avec un code court ;
-- réactions du public, énergie, temps de recharge et budget de gêne ;
-- briefing, préparation, représentation, finale et verdict ;
-- score de continuité, récupération, participation du public, conclusion et équilibre du duo ;
-- interface responsive pour ordinateur et téléphone ;
+- séparation visuelle entre didascalie, intention, texte à lire et action suivante ;
+- état **prêt** obligatoire avant le lancement ;
+- affichage des joueurs connectés et déconnectés ;
+- pause automatique si un comédien perd sa connexion ;
+- code de reprise pour récupérer sa place sur un autre appareil ;
+- remplacement d'un comédien absent par un membre du public ;
+- réactions indiquant leur expéditeur, leur cible et leur durée ;
+- questionnaire rapide directement après le verdict ;
+- rapport JSON anonymisé exportable par l'hôte ;
 - aucune dépendance NPM.
 
-La voix reste volontairement sur Discord ou dans la même pièce. Aucune voix n'est enregistrée.
+La voix reste volontairement sur Discord ou dans la même pièce. **Aucun audio n'est enregistré.**
+
+## Parcours conseillé pour un premier test
+
+1. L'hôte crée une salle en choisissant un ou deux comédiens.
+2. Les autres joueurs rejoignent avec le code de salle.
+3. L'hôte sélectionne **Répétition générale : la couronne disparue**.
+4. Chaque participant confirme qu'il est prêt.
+5. Le groupe joue le tutoriel jusqu'au verdict.
+6. Chaque joueur remplit le questionnaire intégré.
+7. L'hôte exporte le rapport JSON.
+8. Le groupe lance ensuite une histoire longue.
 
 ## Comprendre l'écran comédien
 
@@ -37,6 +49,33 @@ Pendant une réplique, l'interface sépare cinq informations :
 
 En duo, une bannière affiche clairement **À toi — lis maintenant** ou **Attends — l'autre comédien parle**. Le serveur refuse qu'un joueur valide la réplique de l'autre.
 
+## Reprendre une place
+
+Chaque joueur reçoit un code de reprise à six caractères dans le salon. Pour récupérer une place après une perte de session ou un changement d'appareil, renseigner :
+
+- le code de salle ;
+- le pseudo exact ;
+- le code de reprise.
+
+Une déconnexion de comédien met les phases chronométrées en pause. La partie reprend automatiquement après sa reconnexion, ou lorsque l'hôte le remplace.
+
+## Rapport de playtest
+
+Après le verdict, l'hôte peut exporter un rapport contenant :
+
+- l'histoire et le format solo ou duo ;
+- le nombre de participants ;
+- la durée de la partie ;
+- les répliques terminées ;
+- les réactions jouées ;
+- les récupérations et passages forcés ;
+- les déconnexions ;
+- le score final ;
+- les moyennes du questionnaire ;
+- les moments mémorables volontairement renseignés.
+
+Les pseudos ne sont pas inclus dans ce rapport.
+
 ## Lancer le prototype
 
 Prérequis : **Node.js 20 ou plus récent**.
@@ -48,13 +87,6 @@ Double-cliquer sur :
 ```text
 start_windows.bat
 ```
-
-Le terminal affiche :
-
-- une adresse **Local** pour le PC de l'hôte ;
-- une ou plusieurs adresses **Réseau** pour les autres joueurs connectés au même Wi-Fi.
-
-Le pare-feu Windows peut demander d'autoriser Node.js sur les réseaux privés lors du premier lancement.
 
 ### Terminal
 
@@ -68,20 +100,7 @@ Adresse locale par défaut :
 http://localhost:4173
 ```
 
-### Tester seul
-
-Pour le mode solo, ouvrir deux onglets :
-
-1. créer une salle avec **1 comédien** dans le premier ;
-2. rejoindre la salle comme public dans le second.
-
-Pour simuler un duo, ouvrir trois onglets :
-
-1. créer une salle avec **2 comédiens** ;
-2. rejoindre comme **Comédien 2** ;
-3. rejoindre comme public.
-
-Chaque onglet conserve une session distincte.
+Le terminal affiche également une adresse **Réseau** à ouvrir sur les appareils connectés au même Wi-Fi.
 
 ## Vérifications
 
@@ -90,13 +109,14 @@ npm run check
 npm run smoke
 ```
 
-Le check valide les six histoires, les deux personnages par histoire et un minimum de quatre-vingt-dix répliques. Le smoke test joue automatiquement une partie solo puis une partie duo complète.
+Le smoke test vérifie notamment :
 
-## Nature du jeu
-
-Tomate ! est principalement un jeu **multijoueur asymétrique et simultané** : chaque rôle possède une interface, des informations et des responsabilités différentes pendant la même représentation.
-
-Des modes réellement asynchrones sont aussi envisagés, notamment **Téléphone théâtral**, dans lequel chaque joueur poursuit une scène à partir d'un fragment de la contribution précédente.
+- le blocage tant que les joueurs ne sont pas prêts ;
+- une partie duo ;
+- la pause lors de la déconnexion d'un comédien ;
+- la reprise de sa place ;
+- le questionnaire final ;
+- l'absence de pseudos dans le rapport exporté.
 
 ## Modes envisagés
 
@@ -117,6 +137,7 @@ Des modes réellement asynchrones sont aussi envisagés, notamment **Téléphone
 
 ### Prototype
 
+- [Prototype playtest V0.3.1](docs/PROTOTYPE_V031.md)
 - [Prototype multijoueur V0.3](docs/PROTOTYPE_V3.md)
 - [Prototype multijoueur V0.2](docs/PROTOTYPE_V1.md)
 - [Installation rapide](INSTALLATION_RAPIDE.txt)
@@ -154,10 +175,10 @@ Des modes réellement asynchrones sont aussi envisagés, notamment **Téléphone
 content/
 ├── reactions.json           Réactions du public
 ├── scenes.json              Anciennes scènes v0.2 conservées
-└── scenes-v3/               Six histoires longues v0.3
+└── scenes-v3/               Tutoriel et histoires longues
 public/                       Interface navigateur multijoueur
 server/                       Serveur HTTP/SSE et moteur de partie
-prototype/                    Première maquette locale conservée comme référence
+prototype/                    Première maquette locale conservée
 scripts/                      Vérifications et smoke test
 docs/                         Game design et documentation produit
 ```
@@ -166,11 +187,11 @@ docs/                         Game design et documentation produit
 
 - salles conservées uniquement en mémoire ;
 - maximum de deux comédiens simultanés ;
-- pas de remplacement automatique d'un comédien pendant une représentation ;
 - pas de compte ni de sauvegarde persistante ;
 - pas d'audio intégré, de reconnaissance vocale ou d'IA générative ;
 - pas de matchmaking ni d'exposition Internet automatique ;
-- le public cible automatiquement le personnage actuellement actif.
+- le public cible automatiquement le personnage actif ;
+- le remplacement d'un comédien reste une action manuelle de l'hôte.
 
 ## Principes de conception
 
