@@ -1,0 +1,27 @@
+TOMATE ! — PROTOTYPE MULTIJOUEUR V0.2
+======================================
+
+PREREQUIS
+- Node.js 20 ou plus recent
+- Tous les appareils sur le meme reseau Wi-Fi
+
+WINDOWS
+1. Decompressez completement le ZIP.
+2. Double-cliquez sur start_windows.bat.
+3. Autorisez Node.js sur les reseaux prives si le pare-feu Windows le demande.
+4. Ouvrez l'adresse "Local" sur le PC du comedien.
+5. Ouvrez l'adresse "Reseau" sur les telephones du public.
+
+LINUX
+1. Ouvrez un terminal dans le dossier.
+2. Lancez : ./start_linux.sh
+
+TEST SUR UN SEUL PC
+- Ouvrez deux onglets du navigateur.
+- Creez une salle dans le premier.
+- Rejoignez-la comme public dans le second.
+
+ARRET
+- Fermez la fenetre du serveur ou utilisez Ctrl+C.
+
+Aucune voix n'est enregistree. Utilisez Discord si les joueurs ne sont pas dans la meme piece.

@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tomate ! — Prototype</title>
+  <meta name="description" content="Prototype local du jeu théâtral chaotique Tomate !">
+  <link rel="stylesheet" href="./style.css">
+</head>
+<body>
+  <main class="app-shell">
+    <header class="masthead">
+      <div>
+        <p class="eyebrow">PROTOTYPE LOCAL · V0.1</p>
+        <h1>Tomate !</h1>
+        <p class="tagline">Le spectacle doit continuer. Même quand personne ne sait pourquoi.</p>
+      </div>
+      <div class="audience-meter" aria-label="Humeur du public">
+        <span>PUBLIC</span>
+        <strong id="moodValue">Curieux</strong>
+      </div>
+    </header>
+
+    <section class="panel mode-panel" aria-labelledby="modeTitle">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">ÉTAPE 01</p>
+          <h2 id="modeTitle">Choisir une représentation</h2>
+        </div>
+        <p>Cette maquette simule une partie locale. Le futur jeu distribuera chaque rôle sur son propre écran.</p>
+      </div>
+
+      <div class="mode-grid" id="modeGrid">
+        <button class="mode-card is-selected" data-mode="lecture">
+          <span class="mode-number">M01</span>
+          <strong>Lecture sous pression</strong>
+          <small>Un comédien, le reste dans le public.</small>
+        </button>
+        <button class="mode-card" data-mode="solo">
+          <span class="mode-number">M02</span>
+          <strong>Seul en scène</strong>
+          <small>Un joueur interprète tous les personnages.</small>
+        </button>
+        <button class="mode-card" data-mode="duo">
+          <span class="mode-number">M03</span>
+          <strong>Duo catastrophe</strong>
+          <small>Deux comédiens aux objectifs incompatibles.</small>
+        </button>
+        <button class="mode-card" data-mode="regie">
+          <span class="mode-number">M07</span>
+          <strong>Mauvais régisseur</strong>
+          <small>La technique devient un adversaire créatif.</small>
+        </button>
+      </div>
+    </section>
+
+    <section class="stage-layout">
+      <article class="stage panel" aria-labelledby="playTitle">
+        <div class="stage-topline">
+          <div>
+            <p class="eyebrow">SCÈNE EN COURS</p>
+            <h2 id="playTitle">Le procès de la dernière part</h2>
+          </div>
+          <div class="timer" id="timer">01:30</div>
+        </div>
+
+        <div class="brief">
+          <span>THÈME</span>
+          <strong id="themeText">Procès médiéval absurde</strong>
+        </div>
+
+        <div class="script-window" id="scriptWindow">
+          <div class="tomato-layer" id="tomatoLayer" aria-hidden="true"></div>
+          <p class="speaker" id="speaker">LE ROI — solennel, mais nerveux</p>
+          <p class="line" id="scriptLine">
+            Que le coupable se dénonce avant le coucher du soleil. Le royaume ne survivra pas à une nouvelle nuit sans pizza.
+          </p>
+          <p class="secret" id="secretGoal">Objectif secret : cacher que vous avez mangé la dernière part.</p>
+        </div>
+
+        <div class="actor-controls">
+          <button class="primary" id="nextLine">Réplique dite</button>
+          <button id="cleanScreen">Essuyer l'écran</button>
+          <button id="restartScene">Recommencer</button>
+        </div>
+
+        <div class="cue-strip">
+          <span>PROCHAIN CUE</span>
+          <strong id="cueText">Tonnerre après « royaume »</strong>
+        </div>
+      </article>
+
+      <aside class="panel audience-panel" aria-labelledby="audienceTitle">
+        <div class="section-heading compact">
+          <div>
+            <p class="eyebrow">INTERFACE PUBLIC</p>
+            <h2 id="audienceTitle">Réactions</h2>
+          </div>
+          <div class="currency"><strong id="tomatoCount">5</strong> tomates</div>
+        </div>
+
+        <div class="reaction-grid">
+          <button class="reaction" data-action="tomato" data-cost="1">
+            <strong>Tomate</strong>
+            <small>Masque une partie du texte.</small>
+            <span>1</span>
+          </button>
+          <button class="reaction" data-action="emotion" data-cost="1">
+            <strong>Plus dramatique</strong>
+            <small>Change l'intention du comédien.</small>
+            <span>1</span>
+          </button>
+          <button class="reaction" data-action="noise" data-cost="2">
+            <strong>Téléphone</strong>
+            <small>Ajoute une sonnerie à intégrer.</small>
+            <span>2</span>
+          </button>
+          <button class="reaction positive" data-action="applause" data-cost="2">
+            <strong>Applaudissements</strong>
+            <small>Nettoie et rend du temps.</small>
+            <span>2</span>
+          </button>
+        </div>
+
+        <div class="event-log" aria-live="polite">
+          <div class="event-log-title">Journal de salle</div>
+          <ol id="eventLog">
+            <li>Le rideau se lève.</li>
+          </ol>
+        </div>
+      </aside>
+    </section>
+
+    <footer>
+      <p>Maquette de game design — aucun réseau, microphone ou service d'IA n'est utilisé.</p>
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="./app.js"></script>
+</body>
+</html>

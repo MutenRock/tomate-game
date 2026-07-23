@@ -1,0 +1,41 @@
+name: Idée ou fonctionnalité
+description: Proposer une évolution de Tomate !
+title: "[Feature] "
+labels:
+  - enhancement
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problème ou opportunité
+      description: Quel besoin de jeu cette idée adresse-t-elle ?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposition
+      description: Décrire le comportement attendu.
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Domaine
+      options:
+        - Public
+        - Comédien
+        - Régie
+        - Mise en scène
+        - Contenu
+        - Multijoueur
+        - Audio
+        - Accessibilité
+        - Documentation
+    validations:
+      required: true
+  - type: textarea
+    id: risks
+    attributes:
+      label: Risques et contre-jeu
+      description: Comment éviter que cette idée rende la partie injuste ou illisible ?

@@ -1,0 +1,9 @@
+{
+  "name": "Tomate ! Prototype",
+  "short_name": "Tomate !",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#181312",
+  "theme_color": "#181312",
+  "icons": []
+}
