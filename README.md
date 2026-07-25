@@ -102,6 +102,38 @@ http://localhost:4173
 
 Le terminal affiche également une adresse **Réseau** à ouvrir sur les appareils connectés au même Wi-Fi.
 
+### Jouer avec des joueurs distants (Cloudflare Tunnel)
+
+Pour inviter des joueurs qui ne sont pas sur le même réseau Wi-Fi, utilisez un tunnel Cloudflare.
+
+**Windows — script tout-en-un :**
+
+Double-cliquer sur :
+
+```text
+start_windows_cloudflare.bat
+```
+
+Le serveur se lance dans une fenêtre séparée. L'URL publique s'affiche dans la fenêtre principale sous la forme :
+
+```text
+https://xxxx-xxxx.trycloudflare.com
+```
+
+Partagez cette URL à vos joueurs. Aucun compte Cloudflare n'est nécessaire.
+
+**Manuel (toutes plateformes) :**
+
+```bash
+# Terminal 1
+npm run dev
+
+# Terminal 2
+npx cloudflared tunnel --url http://localhost:4173
+```
+
+> **Note :** l'URL change à chaque relance du tunnel. Les salles étant conservées en mémoire, couper le serveur met fin à toutes les parties en cours.
+
 ## Vérifications
 
 ```bash
