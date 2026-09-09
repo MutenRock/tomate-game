@@ -4,6 +4,17 @@
 
 **Tomate !** est un jeu de performance chaotique jouable entre amis. Un ou deux comédiens tentent de maintenir une histoire compréhensible pendant que le public les encourage, leur impose des contraintes et lance des perturbations limitées.
 
+## Reprendre le projet / agents
+
+Pour reprendre le travail sans contexte de conversation, commencer par :
+
+1. [`AGENTS.md`](AGENTS.md) — règles de handoff et priorités ;
+2. [`docs/CURRENT_STATE.md`](docs/CURRENT_STATE.md) — état fonctionnel et technique réel ;
+3. [`docs/15-product-decisions.md`](docs/15-product-decisions.md) — décisions déjà actées ;
+4. [`docs/07-roadmap.md`](docs/07-roadmap.md) — roadmap synchronisée avec la v0.3.1.
+
+Le projet actif est **à la racine du dépôt**. Le dossier `tomate-game-prototype-v1/` est un snapshot historique ajouté pour archivage : ne pas développer dedans.
+
 ## Prototype playtest v0.3.1
 
 La v0.3.1 est conçue pour être confiée à un groupe qui ne connaît pas encore le projet :
@@ -150,6 +161,10 @@ Le smoke test vérifie notamment :
 - le questionnaire final ;
 - l'absence de pseudos dans le rapport exporté.
 
+## Étude joueurs V2
+
+Une étude externe plus large est disponible dans [`research/player-study-v2/`](research/player-study-v2/). Elle contient un questionnaire de 51 questions, un guide d'analyse et un générateur Google Forms. Elle est distincte du feedback court intégré à la fin des parties.
+
 ## Modes envisagés
 
 - **Lecture sous pression** — un comédien, tous les autres dans le public ;
@@ -166,6 +181,11 @@ Le smoke test vérifie notamment :
 - **Atelier créateur** — pièces et packs personnalisés.
 
 ## Documentation
+
+### Handoff
+
+- [Guide pour agents](AGENTS.md)
+- [État courant](docs/CURRENT_STATE.md)
 
 ### Prototype
 
@@ -204,15 +224,18 @@ Le smoke test vérifie notamment :
 ## Structure
 
 ```text
+AGENTS.md                     Handoff prioritaire pour agents
 content/
 ├── reactions.json           Réactions du public
 ├── scenes.json              Anciennes scènes v0.2 conservées
 └── scenes-v3/               Tutoriel et histoires longues
+docs/                         Game design, état courant et documentation produit
 public/                       Interface navigateur multijoueur
+research/                     Études joueurs et outils associés
 server/                       Serveur HTTP/SSE et moteur de partie
 prototype/                    Première maquette locale conservée
+tomate-game-prototype-v1/     Snapshot historique : ne pas développer dedans
 scripts/                      Vérifications et smoke test
-docs/                         Game design et documentation produit
 ```
 
 ## Limites actuelles
@@ -221,7 +244,7 @@ docs/                         Game design et documentation produit
 - maximum de deux comédiens simultanés ;
 - pas de compte ni de sauvegarde persistante ;
 - pas d'audio intégré, de reconnaissance vocale ou d'IA générative ;
-- pas de matchmaking ni d'exposition Internet automatique ;
+- pas de matchmaking ni de déploiement Internet public stable ;
 - le public cible automatiquement le personnage actif ;
 - le remplacement d'un comédien reste une action manuelle de l'hôte.
 
