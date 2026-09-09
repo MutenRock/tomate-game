@@ -11,7 +11,9 @@ const studyScripts = [
   `${studyRoot}/google-forms/Questions_26_51.gs`
 ];
 const required = [
+  "AGENTS.md",
   "README.md",
+  "CONTRIBUTING.md",
   "package.json",
   "content/reactions.json",
   "public/index.html",
@@ -20,7 +22,11 @@ const required = [
   "server/server.mjs",
   "server/game-engine.mjs",
   "scripts/smoke-test.mjs",
+  "docs/CURRENT_STATE.md",
   "docs/PROTOTYPE_V031.md",
+  "docs/06-technical-architecture.md",
+  "docs/07-roadmap.md",
+  "docs/15-product-decisions.md",
   `${studyRoot}/README.md`,
   `${studyRoot}/questionnaire.md`,
   `${studyRoot}/analysis-guide.md`,
@@ -33,9 +39,17 @@ for (const file of required) await access(file);
 const pkg = JSON.parse(await readFile("package.json", "utf8"));
 const scenes = await Promise.all(sceneFiles.map(async (file) => JSON.parse(await readFile(`${sceneRoot}/${file}`, "utf8"))));
 const reactions = JSON.parse(await readFile("content/reactions.json", "utf8"));
+const agents = await readFile("AGENTS.md", "utf8");
+const currentState = await readFile("docs/CURRENT_STATE.md", "utf8");
 
 if (pkg.name !== "tomate-game" || pkg.version !== "0.3.1") {
   throw new Error("Version attendue : tomate-game 0.3.1.");
+}
+if (!agents.includes("docs/CURRENT_STATE.md")) {
+  throw new Error("AGENTS.md doit pointer vers docs/CURRENT_STATE.md.");
+}
+if (!currentState.includes("v0.3.1") || !currentState.includes("Server-Sent Events")) {
+  throw new Error("CURRENT_STATE.md doit décrire la version et l’architecture actives.");
 }
 if (!scenes.some((scene) => scene.tutorial)) throw new Error("Une scène tutoriel est obligatoire.");
 if (scenes.some((scene) => scene.cast?.length !== 2 || !Array.isArray(scene.lines) || scene.lines.length < 7)) {
@@ -58,5 +72,5 @@ if (studyContext.__studyResult.questionCount !== 51 || studyContext.__studyResul
 console.log(
   `Tomate ! v0.3.1 check passed — ${scenes.length} histoires, ` +
   `${scenes.reduce((sum, scene) => sum + scene.lines.length, 0)} répliques, ` +
-  `${studyContext.__studyResult.questionCount} questions d’étude.`
+  `${studyContext.__studyResult.questionCount} questions d’étude, handoff agent présent.`
 );
