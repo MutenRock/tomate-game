@@ -1,134 +1,272 @@
 # Architecture technique
 
-## Objectif initial
+> Ce document distingue désormais **l'architecture active** de la **cible éventuelle**.
+>
+> Pour l'état exact du projet, lire aussi [`CURRENT_STATE.md`](CURRENT_STATE.md) et [`../AGENTS.md`](../AGENTS.md).
 
-Application web installable, jouable sur ordinateur et téléphone, avec un serveur temps réel autoritaire.
+## Architecture active — v0.3.1
 
-## Architecture cible
+Le prototype actuel privilégie une architecture volontairement simple afin de tester le jeu avant d'engager une migration technique lourde.
 
 ```text
 Navigateur comédien ─┐
-Navigateur régie ────┼── WebSocket ── Serveur de partie
-Navigateur public ───┘                   │
-                                        ├── moteur de règles
-                                        ├── horloge autoritaire
-                                        ├── stockage des parties
-                                        └── génération de contenu
+Navigateur comédien ─┼── HTTP commandes ─┐
+Navigateur public ───┘                    │
+                                          ├── Serveur Node.js
+Tous les navigateurs <── SSE état ────────┘       │
+                                                  ├── moteur de règles
+                                                  ├── salons en mémoire
+                                                  ├── horloge / phases
+                                                  ├── réactions / incidents
+                                                  └── rapports de playtest
 ```
 
-## Frontend
+### Runtime
 
-Proposition :
+- Node.js 20+ ;
+- JavaScript ESM ;
+- aucune dépendance NPM requise pour l'application active ;
+- serveur : `server/server.mjs` ;
+- moteur : `server/game-engine.mjs`.
 
-- TypeScript ;
-- React ou Preact ;
-- Vite ;
-- machine à états explicite ;
-- interfaces adaptées par rôle ;
-- PWA pour l'accès mobile ;
-- Web Audio API pour certains effets ;
-- animations CSS ou Canvas pour les perturbations.
+### Frontend
 
-## Backend
+Le client actif n'utilise pas de framework :
 
-Proposition :
+- `public/index.html` ;
+- `public/app.js` ;
+- `public/styles.css` ;
+- `public/manifest.webmanifest`.
 
-- Node.js et TypeScript ;
-- WebSocket via Socket.IO ou bibliothèque plus légère ;
-- serveur autoritaire ;
-- validation des messages ;
-- salons à code court ;
-- reconnexion ;
-- journal d'événements ;
-- limitation de débit des actions du public.
+Cette simplicité est intentionnelle pour le prototype de playtest.
 
-## État d'une partie
-
-```ts
-type MatchPhase =
-  | "lobby"
-  | "casting"
-  | "briefing"
-  | "preparation"
-  | "performance"
-  | "finale"
-  | "verdict";
-```
-
-Le serveur conserve :
-
-- phase ;
-- horloge ;
-- joueurs et rôles ;
-- scène courante ;
-- cues ;
-- incidents actifs ;
-- ressources du public ;
-- score ;
-- journal d'événements.
-
-## Événements réseau initiaux
+## Réseau actuel
 
 ### Client vers serveur
 
-- `room:create`
-- `room:join`
-- `player:ready`
-- `role:select`
-- `match:start`
-- `line:confirm`
-- `reaction:play`
-- `cue:trigger`
-- `director:instruction`
+Les actions passent par HTTP JSON.
+
+Routes principales :
+
+```text
+POST /api/rooms
+POST /api/rooms/:code/join
+POST /api/rooms/:code/reclaim
+GET  /api/rooms/:code/state
+POST /api/rooms/:code/commands
+GET  /api/rooms/:code/report
+GET  /api/rooms/:code/events
+```
 
 ### Serveur vers client
 
-- `room:snapshot`
-- `match:phase`
-- `timer:sync`
-- `script:update`
-- `reaction:resolved`
-- `incident:started`
-- `incident:ended`
-- `verdict:ready`
+`/events` utilise **Server-Sent Events (SSE)** pour diffuser les snapshots personnalisés.
 
-## Horloge
+Le serveur reste autoritaire : le client ne décide pas de l'état officiel de la partie.
 
-Le serveur décide du temps. Les clients affichent une interpolation locale et se resynchronisent périodiquement.
+### Pourquoi SSE maintenant ?
+
+- aucun besoin de bibliothèque externe ;
+- diffusion serveur → clients suffisante pour le prototype ;
+- commandes client → serveur simples en HTTP ;
+- débogage facile ;
+- acceptable pour les tests actuels.
+
+Une migration WebSocket ne doit être entreprise que lorsqu'un besoin réel la justifie.
+
+## État d'une partie
+
+Phases actives :
+
+```text
+lobby
+briefing
+preparation
+performance
+finale
+verdict
+```
+
+Le serveur conserve notamment :
+
+- code de salon ;
+- phase ;
+- échéance de phase ;
+- scène ;
+- réplique active ;
+- joueurs ;
+- rôle / emplacement des comédiens ;
+- état prêt ;
+- état de connexion ;
+- énergie du public ;
+- cooldowns ;
+- incidents actifs ;
+- métriques de partie ;
+- feedback ;
+- verdict.
+
+## Sessions et reconnexion
+
+Chaque participant possède :
+
+- un `playerId` ;
+- un token de session ;
+- un code de reprise à six caractères.
+
+La reprise de place permet de retrouver une session depuis un nouvel onglet ou appareil tant que le serveur est toujours vivant.
+
+Une déconnexion d'un comédien peut mettre les phases chronométrées en pause. L'hôte peut remplacer manuellement un comédien absent.
+
+## Persistance
+
+Il n'y en a **aucune** actuellement.
+
+Toutes les salles sont conservées en mémoire dans le processus Node.
+
+Conséquences :
+
+- redémarrer le serveur supprime les salles ;
+- le tunnel Cloudflare n'apporte aucune persistance ;
+- aucune base de données n'est requise pour le prototype ;
+- ne pas ajouter une base uniquement “pour faire propre” avant que le besoin de playtest ne le justifie.
+
+## Exposition réseau
+
+### Localhost
+
+Pour tester plusieurs rôles dans différents onglets :
+
+```text
+http://localhost:4173
+```
+
+### LAN
+
+`server/server.mjs` affiche les adresses IPv4 locales afin que les téléphones connectés au même Wi-Fi puissent rejoindre la partie.
+
+### Test distant
+
+`start_windows_cloudflare.bat` lance le serveur puis un Cloudflare Tunnel temporaire avec :
+
+```bash
+npx cloudflared tunnel --url http://localhost:4173
+```
+
+Ce tunnel :
+
+- ne nécessite pas de compte Cloudflare dans ce mode ;
+- produit une URL temporaire ;
+- ne constitue pas un hébergement de production ;
+- dépend du PC hôte et de son processus Node.
+
+## Contenu
+
+### Histoires actives
+
+`content/scenes-v3/`
+
+- tutoriel guidé ;
+- six histoires longues ;
+- deux personnages par histoire dans la structure actuelle.
+
+### Réactions
+
+`content/reactions.json`
+
+Le serveur valide :
+
+- coût ;
+- cooldown ;
+- sévérité ;
+- budget de gêne ;
+- cible active.
+
+## Rapport de playtest
+
+Le moteur peut produire un rapport JSON anonymisé comprenant notamment :
+
+- version ;
+- scène ;
+- mode solo / duo ;
+- nombre de joueurs ;
+- durée ;
+- répliques terminées ;
+- réactions ;
+- récupérations ;
+- passages forcés ;
+- déconnexions ;
+- verdict ;
+- feedback agrégé / anonymisé.
+
+Les pseudos ne doivent pas être ajoutés à cet export sans décision explicite.
 
 ## Audio
 
-Ordre conseillé :
+Ordre actuel :
 
-1. voix via Discord ou autre service externe pendant les tests ;
-2. détection manuelle des répliques ;
-3. WebRTC intégré ;
-4. transcription facultative ;
-5. analyse de rythme ou d'intention en option.
+1. voix dans la même pièce ou via Discord ;
+2. validation manuelle des répliques ;
+3. seulement après validation du gameplay : étude de WebRTC ;
+4. transcription facultative éventuelle ;
+5. analyse de rythme ou d'intention uniquement si elle apporte une vraie valeur.
+
+Aucun audio n'est enregistré par le prototype actuel.
 
 ## IA
 
-Usages raisonnables :
+Le moteur critique du jeu ne dépend pas d'une IA générative.
+
+Usages futurs possibles :
 
 - proposer des thèmes ;
-- adapter un texte à un nombre de joueurs ;
+- adapter une pièce ;
 - générer des contraintes ;
 - produire une critique finale ;
-- résumer la représentation.
+- résumer la représentation ;
+- jouer certains personnages secondaires.
 
-Usages à éviter au MVP :
+À éviter avant validation du cœur :
 
-- jugement entièrement opaque ;
+- jugement opaque du talent d'un joueur ;
 - transcription obligatoire ;
-- génération en direct sans garde-fous ;
+- génération en direct indispensable au déroulement ;
 - dépendance à un fournisseur unique.
 
-## Sécurité
+## Sécurité / robustesse actuelle
 
-- aucune clé d'API dans le client ;
-- validation de tous les événements ;
-- limites de débit ;
-- codes de salon non prédictibles ;
-- filtrage du contenu utilisateur ;
-- consentement explicite avant enregistrement audio ;
-- suppression configurable des enregistrements.
+Déjà présents ou visés par le moteur :
+
+- serveur autoritaire ;
+- tokens de session ;
+- codes de salon non triviaux ;
+- budget de gêne ;
+- cooldowns ;
+- limites fonctionnelles sur les réactions ;
+- export sans pseudos.
+
+Avant un déploiement public stable, il faudra renforcer :
+
+- validation stricte de toutes les entrées ;
+- rate limiting réseau ;
+- expiration / nettoyage des salles ;
+- stockage sécurisé ;
+- observabilité ;
+- gestion d'abus ;
+- stratégie de secrets et configuration d'environnement.
+
+## Cible technique éventuelle — non engagée
+
+Une architecture plus structurée reste envisageable plus tard :
+
+- TypeScript ;
+- React / Preact ou autre framework léger ;
+- Vite ;
+- machine à états explicite ;
+- WebSocket ;
+- stockage persistant ;
+- déploiement stable ;
+- PWA plus complète.
+
+**Ce n'est pas une décision active.**
+
+Une migration doit répondre à un problème observé : complexité croissante, besoin de typage, bidirectionnalité temps réel, persistance ou déploiement. Elle ne doit pas retarder les playtests actuels.

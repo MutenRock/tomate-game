@@ -19,11 +19,13 @@ L'étude cherche principalement à mesurer :
 - [`questionnaire.md`](questionnaire.md) — version humaine complète, prête à relire ou adapter ;
 - [`analysis-guide.md`](analysis-guide.md) — priorités d'analyse et règles de lecture recommandées ;
 - [`google-forms/Code.gs`](google-forms/Code.gs) — moteur de création du formulaire et du classeur ;
-- [`google-forms/Bootstrap.gs`](google-forms/Bootstrap.gs) — assemblage sûr des sections ;
+- [`google-forms/Bootstrap.gs`](google-forms/Bootstrap.gs) — assemblage des sections ;
 - [`google-forms/Questions_01_25.gs`](google-forms/Questions_01_25.gs) — questions 1 à 25 ;
 - [`google-forms/Questions_26_51.gs`](google-forms/Questions_26_51.gs) — questions 26 à 51.
 
 ## Créer le Google Form
+
+**Les quatre fichiers `.gs` sont nécessaires dans le même projet Google Apps Script.**
 
 1. Ouvrir Google Apps Script et créer un projet vide.
 2. Conserver le fichier `Code.gs` créé automatiquement et remplacer son contenu par celui de `google-forms/Code.gs`.
@@ -32,16 +34,51 @@ L'étude cherche principalement à mesurer :
    - `Questions_01_25` ;
    - `Questions_26_51`.
 4. Copier dans chacun le contenu du fichier `.gs` correspondant du dépôt.
-5. Exécuter d'abord `validateQuestionnaireDefinition`.
-6. Vérifier que le journal indique **51 questions dans 11 sections**.
-7. Exécuter `createPlayerStudyQuestionnaire`.
-8. Accepter les autorisations demandées.
-9. Consulter le journal d'exécution pour récupérer :
-   - le lien d'édition du formulaire ;
-   - le lien public ;
-   - le classeur de réponses.
+5. Vérifier dans la colonne de gauche que les quatre fichiers sont visibles.
+6. Enregistrer le projet.
+7. Exécuter d'abord `validateQuestionnaireDefinition`.
+8. Vérifier que le journal indique **51 questions dans 11 sections**.
+9. Exécuter `createPlayerStudyQuestionnaire`.
+10. Accepter les autorisations demandées.
+11. Consulter le journal d'exécution pour récupérer :
+    - le lien d'édition du formulaire ;
+    - le lien public ;
+    - le classeur de réponses.
 
 Le script crée d'abord les onglets **Guide d'analyse** et **Dictionnaire des questions**, puis relie le formulaire au classeur. Il ne tente jamais de figer, fusionner ou restructurer l'onglet de réponses généré par Google Forms.
+
+## Dépannage
+
+### `ReferenceError: getPlayerStudySections_ is not defined`
+
+Cette erreur a été observée lors d'une installation manuelle.
+
+Elle signifie que `Code.gs` est présent mais que **`Bootstrap.gs` n'a pas été ajouté correctement au projet Apps Script**, ou que son contenu n'a pas été copié / enregistré.
+
+Vérifier que le projet Apps Script contient exactement les quatre scripts suivants :
+
+```text
+Code.gs
+Bootstrap.gs
+Questions_01_25.gs
+Questions_26_51.gs
+```
+
+Puis exécuter :
+
+```javascript
+validateQuestionnaireDefinition()
+```
+
+avant de relancer la création du formulaire.
+
+### Erreur sur `getStudySections01_25_` ou `getStudySections26_51_`
+
+Le fichier de questions correspondant manque ou n'a pas été copié correctement.
+
+### Note pour une future amélioration
+
+Le système multi-fichiers est pratique à maintenir dans Git mais augmente le risque d'erreur lors du copier-coller dans Apps Script. Une future évolution utile serait de fournir également une **version autonome mono-fichier** générée à partir de ces sources.
 
 ## Fonctions disponibles
 

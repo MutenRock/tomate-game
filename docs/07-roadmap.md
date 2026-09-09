@@ -1,6 +1,10 @@
 # Roadmap
 
-La roadmap sépare la validation du plaisir de jeu de la complexité réseau. Une phase ne doit pas être considérée comme terminée uniquement parce que son code existe : elle doit aussi avoir été testée avec des joueurs.
+> État synchronisé avec le prototype **v0.3.1**.
+>
+> Pour l'état technique exact, lire d'abord [`../AGENTS.md`](../AGENTS.md) et [`CURRENT_STATE.md`](CURRENT_STATE.md). Une case cochée signifie que la fonctionnalité existe dans le prototype actuel ; elle ne signifie pas nécessairement qu'elle est validée par des playtests humains.
+
+La roadmap sépare volontairement **implémentation** et **validation produit**.
 
 ## Phase 0 — Cadrage
 
@@ -10,155 +14,237 @@ La roadmap sépare la validation du plaisir de jeu de la complexité réseau. Un
 - [x] Définir les rôles.
 - [x] Définir les principes du public.
 - [x] Créer le dépôt.
-- [x] Écrire la spécification du premier MVP.
+- [x] Écrire une spécification du premier MVP.
 - [x] Définir une première proposition de score et de verdict.
 - [x] Définir les garde-fous d'accessibilité et d'anti-acharnement.
 - [x] Préparer un protocole de playtest.
-- [ ] Tester le concept avec une maquette papier ou un partage d'écran.
-- [ ] Choisir une direction artistique.
-- [ ] Choisir le ton éditorial du maître de cérémonie.
+- [x] Créer une étude joueurs V2 plus large.
+- [ ] Accumuler suffisamment de playtests humains pour valider le cœur du concept.
+- [ ] Choisir une direction artistique définitive.
+- [ ] Choisir le ton éditorial définitif du maître de cérémonie.
 - [ ] Décider de la licence avant les contributions externes importantes.
 
-## Phase 1 — Prototype local
+## Phase 1 — Boucle de jeu jouable
 
-**Objectif :** vérifier que lire sous pression est amusant.
+**Objectif :** vérifier que lire / interpréter sous pression est amusant et compréhensible.
 
-### Déjà présent
+### Implémenté
 
-- [x] Maquette de scène locale.
-- [x] Réaction tomate.
-- [x] Réactions visuelles simples.
-- [x] Quatre variantes de scène.
-- [x] Humeur du public.
-- [x] Minuteur.
-- [x] Ressource de tomates.
-- [x] Journal de salle.
-- [x] Mise en page responsive initiale.
+- [x] écran comédien distinct ;
+- [x] écran public distinct et mobile ;
+- [x] briefing ;
+- [x] préparation ;
+- [x] représentation ;
+- [x] finale ;
+- [x] verdict ;
+- [x] six histoires longues ;
+- [x] tutoriel guidé ;
+- [x] mode solo ;
+- [x] mode duo ;
+- [x] objectifs secrets par comédien ;
+- [x] indication claire du tour de parole ;
+- [x] didascalie / intention / texte / action suivante séparés ;
+- [x] réactions avec coût, durée et sévérité ;
+- [x] tomate ;
+- [x] émotion imposée ;
+- [x] téléphone / sonnerie ;
+- [x] mot interdit ;
+- [x] micro-coupure ;
+- [x] applaudissements ;
+- [x] options de confort initiales ;
+- [x] état prêt ;
+- [x] feedback intégré après la partie ;
+- [x] rapport JSON anonymisé.
 
-### À compléter
+### À valider par observation
 
-- [ ] Séparer clairement l'écran comédien de l'écran public.
-- [ ] Ajouter au moins six scènes réellement complètes.
-- [ ] Ajouter une phase de briefing.
-- [ ] Ajouter une phase de préparation.
-- [ ] Ajouter une vraie finale.
-- [ ] Ajouter un écran de verdict.
-- [ ] Ajouter les niveaux de chaos doux, normal et cabaret infernal.
-- [ ] Ajouter le mot interdit et le souffleur.
-- [ ] Ajouter les options de contraste et de réduction des animations.
-- [ ] Permettre une rotation locale du comédien.
-- [ ] Tester avec trois groupes différents.
-- [ ] Consigner chaque session dans un journal de playtest.
+- [ ] trois groupes extérieurs comprennent le tutoriel sans explication détaillée ;
+- [ ] le duo conserve un rythme naturel ;
+- [ ] les histoires de 6–8 minutes gardent l'attention ;
+- [ ] le public ne passe pas trop de temps en attente ;
+- [ ] les perturbations créent davantage d'improvisation que de frustration ;
+- [ ] la hiérarchie visuelle de l'écran comédien est suffisante ;
+- [ ] le verdict est perçu comme amusant et non comme un jugement du talent théâtral.
 
-## Prochain sprint — Boucle locale complète
+## Phase 2 — Prototype multijoueur de playtest
 
-La prochaine version doit permettre de jouer une manche entière sur un même appareil ou par partage d'écran.
+**Objectif :** permettre des tests sur plusieurs appareils, localement ou à distance.
 
-Ordre conseillé :
+### Implémenté en v0.3.1
 
-1. machine à états locale ;
-2. briefing et préparation ;
-3. six scènes au format JSON ;
-4. réactions avec coût, durée et catégories de gêne ;
-5. finale ;
-6. verdict ;
-7. options de confort ;
-8. instrumentation de playtest.
+- [x] serveur Node.js autoritaire ;
+- [x] création de salon ;
+- [x] code de connexion court ;
+- [x] rôle d'hôte ;
+- [x] un ou deux comédiens ;
+- [x] plusieurs membres du public ;
+- [x] ressource individuelle du public ;
+- [x] synchronisation serveur → clients par SSE ;
+- [x] budget de gêne calculé côté serveur ;
+- [x] reconnexion / reprise de place ;
+- [x] état connecté / déconnecté ;
+- [x] pause automatique sur déconnexion d'un comédien ;
+- [x] remplacement manuel d'un comédien ;
+- [x] journal de partie ;
+- [x] verdict partagé ;
+- [x] interface public sur téléphone ;
+- [x] test LAN ;
+- [x] tunnel Cloudflare temporaire pour tests distants ;
+- [x] smoke test automatisé.
 
-Critères de sortie :
+### Restant avant un vrai vertical slice public
 
-- une partie possède un début et une fin clairs ;
-- les réactions ne peuvent pas bloquer totalement le texte ;
-- le verdict s'appuie sur le journal réel de la manche ;
-- trois joueurs peuvent comprendre la boucle sans explication détaillée ;
-- au moins une session de test est documentée.
+- [ ] persistance des salles / parties ;
+- [ ] déploiement stable public ;
+- [ ] reprise après redémarrage serveur ;
+- [ ] rotation automatique et équitable des rôles ;
+- [ ] plusieurs manches consécutives mieux outillées ;
+- [ ] supervision / logs exploitables en environnement déployé ;
+- [ ] sécurisation plus complète des entrées et limitations de débit ;
+- [ ] tests réseau avec plusieurs groupes réels à distance.
 
-## Phase 2 — Vertical slice multijoueur
+## Sprint actuel — Playtest et apprentissage
 
-**Objectif :** jouer à distance dans un navigateur.
+**Priorité actuelle : obtenir des données, pas ajouter une grande nouvelle couche de gameplay.**
 
-- [ ] Créer la structure TypeScript du client et du serveur.
-- [ ] Création de salon.
-- [ ] Code de connexion court.
-- [ ] Rôle d'hôte.
-- [ ] Un comédien et plusieurs spectateurs.
-- [ ] Ressource individuelle du public.
-- [ ] Horloge serveur autoritaire.
-- [ ] Synchronisation des réactions.
-- [ ] Budget de gêne calculé par le serveur.
-- [ ] Rotation automatique du comédien.
-- [ ] Reconnexion.
-- [ ] Journal de partie.
-- [ ] Verdict partagé.
-- [ ] Interface public utilisable sur téléphone.
-- [ ] Déploiement de test.
-- [ ] Trois manches consécutives sans recréer le salon.
+Ordre recommandé :
+
+1. faire jouer le tutoriel à des personnes qui ne connaissent pas Tomate ! ;
+2. enchaîner avec une histoire longue ;
+3. exporter le rapport JSON ;
+4. recueillir les observations qualitatives de l'organisateur ;
+5. répéter avec plusieurs tailles de groupe ;
+6. analyser les réponses de `research/player-study-v2/` quand l'échantillon devient utile ;
+7. corriger les points de friction observés ;
+8. choisir le prochain axe majeur seulement à partir de ces données.
+
+### Critères de sortie du sprint
+
+- au moins trois groupes différents testés ;
+- au moins un test avec deux comédiens ;
+- au moins un test distant ;
+- rapports de playtest conservés ;
+- problèmes de compréhension classés par fréquence / gravité ;
+- décision explicite sur le prochain axe de développement.
+
+## Axes candidats après playtests
+
+Le choix doit venir des données, pas de l'ordre de cette liste.
+
+### A — Public enrichi
+
+À choisir si le public manque de décisions ou attend trop entre deux réactions.
+
+Pistes :
+
+- votes ;
+- combos ;
+- objectifs collectifs ;
+- ressources partagées ;
+- aide active au comédien ;
+- événements rares plus lisibles.
+
+### B — Régisseur
+
+À choisir si le cœur lecture + public est déjà solide et qu'un nouveau rôle asymétrique peut augmenter la coordination.
+
+Pistes :
+
+- cues ;
+- sons ;
+- lumières ;
+- déclencheurs contextuels ;
+- informations différentes de celles des comédiens.
+
+### C — Prompteur plus dynamique
+
+À choisir si les comédiens se perdent encore dans le texte ou si le rythme de lecture reste trop lourd.
+
+Pistes :
+
+- découpage plus fin ;
+- préparation de la prochaine intention ;
+- aides contextuelles ;
+- souffleur ;
+- réglages de densité de texte.
+
+### D — Robustesse / déploiement
+
+À choisir si les playtests sont suffisamment amusants mais difficiles à organiser techniquement.
+
+Pistes :
+
+- persistance ;
+- hébergement stable ;
+- meilleure reconnexion ;
+- observabilité ;
+- URLs de salle partageables.
 
 ## Phase 3 — Contenu et progression légère
 
-- [ ] Packs thématiques.
-- [ ] Contraintes secrètes.
-- [ ] Personnalités de public automatisé.
-- [ ] Résumé de partie.
-- [ ] Titres narratifs.
-- [ ] Affiche ou souvenir partageable.
-- [ ] Récompenses cosmétiques non compétitives.
-- [ ] Historique local des représentations.
-- [ ] Rotation équitable des rôles.
+- [ ] packs thématiques ;
+- [ ] contraintes secrètes plus variées ;
+- [ ] résumé de partie enrichi ;
+- [ ] titres narratifs ;
+- [ ] affiche ou souvenir partageable ;
+- [ ] récompenses cosmétiques non compétitives ;
+- [ ] historique des représentations ;
+- [ ] rotation équitable des rôles.
 
 ## Phase 4 — Théâtre asymétrique complet
 
-- [ ] Plusieurs comédiens.
-- [ ] Régisseur.
-- [ ] Metteur en scène.
-- [ ] Souffleur.
-- [ ] Accessoiriste.
-- [ ] Cues de scène.
-- [ ] Entrées et sorties.
-- [ ] Effets sonores et lumineux.
-- [ ] Public simulé.
-- [ ] Objectifs secrets par rôle.
-- [ ] Score de récupération multi-rôles.
-- [ ] Interface distincte pour chaque métier.
+- [x] plusieurs comédiens, jusqu'à deux dans le prototype actuel ;
+- [ ] régisseur ;
+- [ ] metteur en scène ;
+- [ ] souffleur humain ;
+- [ ] accessoiriste ;
+- [ ] système de cues multi-rôles ;
+- [ ] entrées et sorties ;
+- [ ] effets sonores et lumineux complets ;
+- [ ] public simulé ;
+- [x] objectifs secrets pour les comédiens ;
+- [ ] objectifs secrets pour les autres rôles ;
+- [ ] score de récupération multi-rôles ;
+- [ ] interface distincte pour chaque métier.
 
 ## Phase 5 — Modes étendus
 
-- [ ] Seul en scène.
-- [ ] Duo catastrophe.
-- [ ] Improvisation publique.
-- [ ] Pièce tournante.
-- [ ] Mauvais régisseur.
-- [ ] Doublage catastrophique.
-- [ ] Téléphone théâtral.
-- [ ] Répétition contre public.
-- [ ] Public contre IA.
-- [ ] Streaming participatif.
+- [x] seul en scène, sous forme du mode solo actuel ;
+- [x] duo catastrophe, sous forme du mode duo actuel ;
+- [ ] improvisation publique ;
+- [ ] pièce tournante ;
+- [ ] mauvais régisseur ;
+- [ ] doublage catastrophique ;
+- [ ] téléphone théâtral ;
+- [ ] répétition contre public ;
+- [ ] public contre IA ;
+- [ ] streaming participatif.
 
 ## Phase 6 — Création et IA
 
-- [ ] Éditeur de pièces.
-- [ ] Import et export de packs.
-- [ ] Validation automatique des contenus.
-- [ ] Génération assistée de thèmes et contraintes.
-- [ ] Adaptation d'une pièce au nombre de joueurs.
-- [ ] Modération du contenu.
-- [ ] Critiques générées à partir du journal réel.
-- [ ] Personnages secondaires génératifs.
-- [ ] Bibliothèque communautaire.
-- [ ] Gestion des droits et licences des créations.
+- [ ] éditeur de pièces ;
+- [ ] import et export de packs ;
+- [ ] validation automatique des contenus ;
+- [ ] génération assistée de thèmes et contraintes ;
+- [ ] adaptation d'une pièce au nombre de joueurs ;
+- [ ] modération du contenu ;
+- [ ] critiques générées à partir du journal réel ;
+- [ ] personnages secondaires génératifs ;
+- [ ] bibliothèque communautaire ;
+- [ ] gestion des droits et licences des créations.
 
 ## Phase 7 — Audio intégré et diffusion
 
 Cette phase reste volontairement tardive.
 
-- [ ] WebRTC intégré.
-- [ ] Réglages individuels de volume.
-- [ ] Consentement explicite à l'enregistrement.
-- [ ] Transcription facultative.
-- [ ] Détection optionnelle des silences et mots-clés.
-- [ ] Overlays de streaming.
-- [ ] Modération des réactions externes.
-- [ ] Export de replay ou montage, uniquement avec consentement.
+- [ ] WebRTC intégré ;
+- [ ] réglages individuels de volume ;
+- [ ] consentement explicite à l'enregistrement ;
+- [ ] transcription facultative ;
+- [ ] détection optionnelle des silences et mots-clés ;
+- [ ] overlays de streaming ;
+- [ ] modération des réactions externes ;
+- [ ] export de replay ou montage avec consentement.
 
 ## Principes de priorisation
 
