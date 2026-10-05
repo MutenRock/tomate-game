@@ -18,6 +18,12 @@
 - La transcription apporte-t-elle assez de valeur ?
 - Comment gérer la latence et les différents microphones ?
 - Quels effets peuvent être calculés localement ?
+- Un rôle de **bruiteur / Foley** chargé d'enregistrer les SFX de la scène est-il amusant sur plusieurs parties ou seulement comme nouveauté ?
+- Les SFX doivent-ils être enregistrés avant la scène, produits en direct, ou mélanger les deux ?
+- Combien de bruitages un joueur peut-il préparer sans transformer la préparation en attente pour les autres ?
+- Les clips doivent-ils rester uniquement sur l'appareil du bruiteur ou être envoyés temporairement au serveur pour être audibles par tous ?
+- Comment garantir que seuls des SFX courts et consentis sont enregistrés, sans capturer la conversation du groupe ?
+- Que faire lorsqu'un joueur refuse l'accès au microphone ou ne possède pas de micro utilisable ?
 
 ## Contenu
 

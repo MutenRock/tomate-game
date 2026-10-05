@@ -48,6 +48,36 @@ Ce document collecte les idées sans promettre leur implémentation.
 - rappel prématuré ;
 - annonce de fin incorrecte.
 
+## Régie sonore humaine / Foley
+
+- un joueur reçoit le rôle de **bruiteur** ;
+- il doit enregistrer lui-même quelques SFX avec son microphone pendant la préparation ;
+- les sons peuvent être faits avec la voix, les mains ou des objets disponibles autour de lui ;
+- le jeu lui fournit ensuite des cues pour les déclencher pendant la scène ;
+- la qualité artisanale des enregistrements fait partie de l'humour ;
+- un mauvais son doit créer une improvisation plutôt qu'une pénalité sèche ;
+- certaines contraintes peuvent imposer un bruitage live, une variation de style ou des boutons temporairement mélangés ;
+- variante : un joueur fabrique les sons et un autre régisseur décide quand les lancer ;
+- variante : le public choisit la manière dont le prochain son doit être enregistré ;
+- variante : enregistrer les sons sans connaître encore leur usage dans l'histoire.
+
+Exemples de sons simples à tester :
+
+- porte ;
+- pas ;
+- tonnerre ;
+- téléphone ;
+- explosion ;
+- alarme ;
+- animal ;
+- foule ;
+- verre cassé ;
+- moteur.
+
+Principe à conserver : **plus le bruitage est bricolé mais reconnaissable, plus il peut devenir drôle lorsque les comédiens doivent le prendre au sérieux.**
+
+Cette piste implique l'accès au microphone et donc des règles explicites de consentement, d'enregistrement court et de suppression. Voir `docs/02-roles.md`.
+
 ## Réactions collectives
 
 - standing ovation ;
