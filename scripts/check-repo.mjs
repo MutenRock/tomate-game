@@ -42,13 +42,13 @@ const reactions = JSON.parse(await readFile("content/reactions.json", "utf8"));
 const agents = await readFile("AGENTS.md", "utf8");
 const currentState = await readFile("docs/CURRENT_STATE.md", "utf8");
 
-if (pkg.name !== "tomate-game" || pkg.version !== "0.3.1") {
-  throw new Error("Version attendue : tomate-game 0.3.1.");
+if (pkg.name !== "tomate-game" || pkg.version !== "0.3.2") {
+  throw new Error("Version attendue : tomate-game 0.3.2.");
 }
 if (!agents.includes("docs/CURRENT_STATE.md")) {
   throw new Error("AGENTS.md doit pointer vers docs/CURRENT_STATE.md.");
 }
-if (!currentState.includes("v0.3.1") || !currentState.includes("Server-Sent Events")) {
+if (!currentState.includes("v0.3.2") || !currentState.includes("Server-Sent Events")) {
   throw new Error("CURRENT_STATE.md doit décrire la version et l’architecture actives.");
 }
 if (!scenes.some((scene) => scene.tutorial)) throw new Error("Une scène tutoriel est obligatoire.");
@@ -70,7 +70,7 @@ if (studyContext.__studyResult.questionCount !== 51 || studyContext.__studyResul
 }
 
 console.log(
-  `Tomate ! v0.3.1 check passed — ${scenes.length} histoires, ` +
+  `Tomate ! v0.3.2 check passed — ${scenes.length} histoires, ` +
   `${scenes.reduce((sum, scene) => sum + scene.lines.length, 0)} répliques, ` +
   `${studyContext.__studyResult.questionCount} questions d’étude, handoff agent présent.`
 );

@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
 const port=4199;const base=`http://127.0.0.1:${port}`;
-const server=spawn(process.execPath,["server/server.mjs"],{cwd:new URL("..",import.meta.url).pathname,env:{...process.env,PORT:String(port),HOST:"127.0.0.1"},stdio:["ignore","pipe","pipe"]});
+const server=spawn(process.execPath,["server/server.mjs"],{cwd:fileURLToPath(new URL("..",import.meta.url)),env:{...process.env,PORT:String(port),HOST:"127.0.0.1"},stdio:["ignore","pipe","pipe"]});
 let logs="";server.stdout.on("data",(c)=>logs+=c);server.stderr.on("data",(c)=>logs+=c);
 const streams=[];
 try{await waitForServer();await testReadiness();await testDuoReconnectFeedback();console.log("Smoke test passed — ready state, pause/reclaim, duo, feedback and report validated.");}finally{for(const stream of streams)stream.abort();server.kill("SIGTERM");}

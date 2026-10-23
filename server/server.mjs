@@ -15,6 +15,7 @@ const clients = new Map();
 const disconnectTimers = new Map();
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || "0.0.0.0";
+const publicUrl = (process.env.PUBLIC_URL || "").replace(/\/+$/, "");
 
 const engine = createEngine({ scenes, reactions, onBroadcast: (room) => broadcastRoom(room.code) });
 const mime = { ".html":"text/html; charset=utf-8", ".css":"text/css; charset=utf-8", ".js":"text/javascript; charset=utf-8", ".json":"application/json; charset=utf-8", ".svg":"image/svg+xml", ".png":"image/png", ".webmanifest":"application/manifest+json" };
@@ -22,7 +23,7 @@ const mime = { ".html":"text/html; charset=utf-8", ".css":"text/css; charset=utf
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-    if (url.pathname === "/api/health" && req.method === "GET") return json(res, 200, { ok: true, rooms: engine.rooms.size, version: "0.3.1", scenes: scenes.length });
+    if (url.pathname === "/api/health" && req.method === "GET") return json(res, 200, { ok: true, rooms: engine.rooms.size, version: "0.3.2", scenes: scenes.length, publicUrl });
     if (url.pathname === "/api/rooms" && req.method === "POST") {
       const body = await bodyJson(req);
       const { room, player } = engine.createRoom(body.name, body.actorSlots);
@@ -138,7 +139,8 @@ function localAddresses() {
   return [...new Set(values)];
 }
 server.listen(port, host, () => {
-  console.log("\n🍅 TOMATE ! — PROTOTYPE PLAYTEST V0.3.1\n");
+  console.log("\n🍅 TOMATE ! — PROTOTYPE PLAYTEST V0.3.2\n");
+  if (publicUrl) console.log(`Public :  ${publicUrl}`);
   console.log(`Local :   http://localhost:${port}`);
   for (const address of localAddresses()) console.log(`Réseau :  http://${address}:${port}`);
   console.log("\nOuvrez l’adresse Réseau sur les appareils connectés au même Wi-Fi.\n");

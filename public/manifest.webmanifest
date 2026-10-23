@@ -1,9 +1,12 @@
 {
-  "name": "Tomate ! — Prototype V0.3",
+  "name": "Tomate ! — Playtest",
   "short_name": "Tomate !",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1c1715",
-  "theme_color": "#a72e2e",
-  "lang": "fr"
+  "background_color": "#3d0912",
+  "theme_color": "#7d1424",
+  "lang": "fr",
+  "icons": [
+    { "src": "/assets/favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
 }

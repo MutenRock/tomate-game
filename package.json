@@ -1,12 +1,13 @@
 {
   "name": "tomate-game",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "private": true,
   "description": "Tomate ! — prototype multijoueur playtest-ready.",
   "type": "module",
   "scripts": {
     "dev": "node server/server.mjs",
     "start": "node server/server.mjs",
+    "remote": "node scripts/remote.mjs",
     "dev:legacy": "node prototype/server.mjs",
     "check": "node scripts/check-repo.mjs",
     "smoke": "node scripts/smoke-test.mjs"

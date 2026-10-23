@@ -1,12 +1,12 @@
 # État courant du projet — Tomate !
 
-Dernière mise à jour : 2026-09-09
+Dernière mise à jour : 2026-10-23
 
 Ce document décrit **l'implémentation réellement active** du dépôt. Il complète `AGENTS.md` et doit être mis à jour dès qu'un changement important modifie le prototype, son architecture ou sa priorité produit.
 
 ## Version active
 
-**v0.3.1 — prototype playtest-ready**
+**v0.3.2 — prototype playtest-ready (habillage + lancement distant)**
 
 Le prototype est suffisamment complet pour être confié à un groupe extérieur avec peu d'explications.
 
@@ -70,6 +70,14 @@ Le prototype est suffisamment complet pour être confié à un groupe extérieur
 - rapport contenant notamment durée, progression, réactions, récupérations, passages forcés, déconnexions, score et feedback ;
 - aucun pseudo dans l'export ;
 - aucun audio enregistré.
+
+### Habillage visuel et lancement distant (v0.3.2)
+
+- thème théâtre : rideaux, marquise lumineuse, logo tomate SVG (`public/assets/`) ;
+- icônes de réactions, jauge de tomates, tâches de tomate animées ;
+- `npm run remote` / `start_windows_cloudflare.bat` : serveur + tunnel Cloudflare, lien public copié, joignabilité vérifiée ;
+- variable `PUBLIC_URL` : le bouton « Copier le lien » du salon génère le lien public ;
+- guide : `docs/PLAYTEST_REMOTE.md`.
 
 ## Contenu actif
 

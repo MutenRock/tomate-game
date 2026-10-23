@@ -9,10 +9,14 @@ let busy = false;
 let serverOffset = 0;
 const params = new URLSearchParams(location.search);
 
+let publicUrl = "";
+
 bootstrap();
 
 async function bootstrap() {
   applyPreferences();
+  spawnRain();
+  try { publicUrl = String((await api("/api/health")).publicUrl || "").replace(/\/+$/, ""); } catch {}
   if (session) {
     try {
       setState(await api(`/api/rooms/${session.roomCode}/state?playerId=${encodeURIComponent(session.playerId)}&token=${encodeURIComponent(session.token)}`));
@@ -25,7 +29,7 @@ async function bootstrap() {
 function renderLanding() {
   const joinCode = (params.get("join") || "").toUpperCase();
   app.innerHTML = `<main class="landing">
-    <section class="hero"><p class="kicker">PLAYTEST READY · V0.3.1</p><h1>Tomate <em>!</em></h1><p>Une histoire, un ou deux comédiens, un public imprévisible — et maintenant un vrai parcours de test.</p><div class="chips"><span>Tutoriel 2–3 min</span><span>Prêt / reconnecté</span><span>Feedback intégré</span></div></section>
+    <section class="hero"><img class="hero-logo" src="/assets/tomato.svg" alt=""><div class="hero-text"><p class="kicker">PLAYTEST · V0.3.2</p><h1>Tomate <em>!</em></h1><p>Une histoire, un ou deux comédiens, un public imprévisible. Lisez, jouez, rattrapez-vous… et évitez les tomates.</p><div class="chips"><span>Tutoriel 2–3 min</span><span>Sur téléphone ou ordinateur</span><span>Jouable à distance</span></div></div></section>
     <section class="entry-grid">
       <form id="createForm" class="card"><h2>Créer une salle</h2><label>Pseudo<input name="name" maxlength="24" required></label><fieldset><legend>Format</legend><label><input type="radio" name="actorSlots" value="1" checked> 1 comédien, deux rôles</label><label><input type="radio" name="actorSlots" value="2"> 2 comédiens</label></fieldset><button class="primary">Ouvrir le rideau</button></form>
       <form id="joinForm" class="card"><h2>Rejoindre</h2><label>Code de salle<input name="code" maxlength="5" value="${escapeHtml(joinCode)}" required></label><label>Pseudo<input name="name" maxlength="24" required></label><fieldset><legend>Place</legend><label><input type="radio" name="role" value="audience" checked> Public</label><label><input type="radio" name="role" value="actor"> Comédien 2</label></fieldset><button>Rejoindre</button></form>
@@ -72,7 +76,7 @@ function render() {
   bindGame(); updateTimers();
 }
 function header() {
-  return `<header><div><p class="kicker">SALLE <button id="copyCode" class="room-code">${state.roomCode}</button></p><h1>Tomate <em>!</em></h1></div><div class="phase"><span>${phaseLabel(state.phase)}</span><strong id="clock">${timeText()}</strong></div></header>`;
+  return `<header><div class="brand"><img src="/assets/tomato.svg" alt=""><div><p class="kicker">SALLE <button id="copyCode" class="room-code">${state.roomCode}</button></p><h1>Tomate <em>!</em></h1></div></div><div class="phase"><span>${phaseLabel(state.phase)}</span><strong id="clock">${timeText()}</strong></div></header>`;
 }
 function pauseBanner() { return `<section class="pause"><strong>⏸ Partie en pause</strong><span>${escapeHtml(state.paused.reason)}. La scène reprendra automatiquement après reconnexion ou remplacement.</span></section>`; }
 function phaseGuide() {
@@ -106,11 +110,13 @@ function actorPanel() {
 }
 function audiencePanel() {
   const current = state.private.currentLine || {}; const reactions = state.private.reactions || [];
-  return `<p class="kicker">PUBLIC</p><h2>${escapeHtml(state.scene.title)}</h2><div class="now"><span>EN CE MOMENT</span><strong>${escapeHtml(current.speaker||state.currentSpeaker)}</strong><small>${escapeHtml(current.act||state.currentAct)}</small></div>${state.scene.tutorial&&current.tutorialAudienceTip?`<div class="tutorial-tip">🎓 ${escapeHtml(current.tutorialAudienceTip)}</div>`:""}<div class="energy"><strong>${"●".repeat(state.me.energy)}${"○".repeat(Math.max(0,6-state.me.energy))}</strong><span>+1 tomate toutes les 20 secondes</span></div><div class="reactions">${reactions.map((reaction)=>reactionButton(reaction,current.recommendedReaction)).join("")}</div><p class="rule">Une bonne perturbation crée du jeu ; elle ne bloque pas la scène.</p>`;
+  return `<p class="kicker">PUBLIC</p><h2>${escapeHtml(state.scene.title)}</h2><div class="now"><span>EN CE MOMENT</span><strong>${escapeHtml(current.speaker||state.currentSpeaker)}</strong><small>${escapeHtml(current.act||state.currentAct)}</small></div>${state.scene.tutorial&&current.tutorialAudienceTip?`<div class="tutorial-tip">🎓 ${escapeHtml(current.tutorialAudienceTip)}</div>`:""}<div class="energy"><span class="pips" aria-label="${state.me.energy} tomates">${energyPips(state.me.energy)}</span><span>+1 tomate toutes les 20 secondes</span></div><div class="reactions">${reactions.map((reaction)=>reactionButton(reaction,current.recommendedReaction)).join("")}</div><p class="rule">Une bonne perturbation crée du jeu ; elle ne bloque pas la scène.</p>`;
 }
+const reactionIcons = { tomato:"🍅", dramatic:"🎭", phone:"📞", forbidden:"🚫", blackout:"💡", applause:"👏" };
+function energyPips(energy) { return Array.from({length:Math.max(6,energy)},(_,index)=>`<i class="pip ${index<energy?"on":""}"></i>`).join(""); }
 function reactionButton(reaction, recommended) {
   const ready=(state.me.cooldowns[reaction.id]||0)<=nowServer(); const enough=state.me.energy>=reaction.cost;
-  return `<button class="reaction ${reaction.kind==="positive"?"positive":""} ${recommended===reaction.id?"recommended":""}" data-reaction="${reaction.id}" data-label="${escapeHtml(reaction.label)}" data-cost="${reaction.cost}" ${ready&&enough?"":"disabled"}><span class="cost">${reaction.cost}</span><strong>${escapeHtml(reaction.label)}</strong><small>${escapeHtml(reaction.description)}</small>${recommended===reaction.id?"<em>À ESSAYER MAINTENANT</em>":""}</button>`;
+  return `<button class="reaction ${reaction.kind==="positive"?"positive":""} ${recommended===reaction.id?"recommended":""}" data-reaction="${reaction.id}" data-label="${escapeHtml(reaction.label)}" data-cost="${reaction.cost}" ${ready&&enough?"":"disabled"}><span class="cost">${reaction.cost}</span><span class="r-icon" aria-hidden="true">${reactionIcons[reaction.id]||"🎬"}</span><strong>${escapeHtml(reaction.label)}</strong><small>${escapeHtml(reaction.description)}</small>${recommended===reaction.id?"<em>À ESSAYER MAINTENANT</em>":""}</button>`;
 }
 function verdictPanel() {
   const verdict=state.verdict;
@@ -138,7 +144,7 @@ function hasEffect(type) { return state.effects.some((effect)=>effect.type===typ
 
 function bindGame() {
   document.querySelector("#copyCode")?.addEventListener("click",()=>copy(state.roomCode));
-  document.querySelector("#copyJoin")?.addEventListener("click",()=>copy(`${location.origin}/?join=${state.roomCode}`));
+  document.querySelector("#copyJoin")?.addEventListener("click",()=>copy(`${shareOrigin()}/?join=${state.roomCode}`));
   document.querySelector("#copyReclaim")?.addEventListener("click",()=>copy(state.me.reclaimCode));
   document.querySelector("#leave")?.addEventListener("click",leaveRoom);
   document.querySelector("#sceneSelect")?.addEventListener("change",(event)=>command("SET_SCENE",{sceneId:event.target.value}));
@@ -166,6 +172,11 @@ function setState(next) { state=next; if(Number.isFinite(state?.serverNow))serve
 function nowServer() { return Date.now()+serverOffset; }
 function phaseLabel(phase) { return ({lobby:"Salon",briefing:"Briefing",preparation:"Préparation",performance:"Représentation",finale:"Finale",verdict:"Verdict"})[phase]||phase; }
 
+function shareOrigin() { return publicUrl || location.origin; }
+function spawnRain() {
+  const rain = document.querySelector("#rain"); if (!rain || rain.childElementCount) return;
+  rain.innerHTML = Array.from({length:9},(_,index)=>`<i style="--x:${6+index*11+(index%3)*3}%;--s:${22+(index*7)%20}px;--d:${14+(index*5)%9}s;--delay:-${(index*3)%13}s;--rot:${(index%2?1:-1)*(140+index*20)}deg"></i>`).join("");
+}
 function applyPreferences() { document.documentElement.dataset.motion=localStorage.getItem("tomate.reduceMotion")==="1"?"reduced":"full"; document.documentElement.dataset.contrast=localStorage.getItem("tomate.contrast")==="1"?"high":"normal"; }
 function bindSettings() { const motion=document.querySelector("#motionToggle"); const contrast=document.querySelector("#contrastToggle"); motion.checked=document.documentElement.dataset.motion==="reduced"; contrast.checked=document.documentElement.dataset.contrast==="high"; motion.addEventListener("change",()=>{localStorage.setItem("tomate.reduceMotion",motion.checked?"1":"0");applyPreferences();}); contrast.addEventListener("change",()=>{localStorage.setItem("tomate.contrast",contrast.checked?"1":"0");applyPreferences();}); }
 async function api(url,options={}) { const response=await fetch(url,{...options,headers:{"Content-Type":"application/json",...(options.headers||{})},body:options.body?JSON.stringify(options.body):undefined}); const payload=await response.json().catch(()=>({})); if(!response.ok)throw new Error(payload.error||`Erreur ${response.status}`); return payload; }
