@@ -25,6 +25,13 @@ Première fois : le tunnel est téléchargé via `npx` (~30 s). Pour éviter cet
 4. Chacun remplit le retour rapide ; l'hôte clique **Exporter le rapport JSON**.
 5. Noter à côté ce que le questionnaire ne capture pas (moments de confusion, fous rires, silences).
 
+## Duo de comédiens, personnages et micro
+
+- Pour jouer à deux sans public : l'hôte crée la salle en « 2 comédiens », l'ami choisit « Comédien 2 » en rejoignant. Le public est facultatif.
+- Avant de commencer (salon, briefing, préparation), chacun habille son personnage dans la **Garde-robe**.
+- Cliquez **Activer le micro** pour que la bouche suive votre voix. Le micro ne fonctionne que sur le lien **https** du tunnel (ou localhost). Sur une adresse `http://192.168…`, la bouche bouge automatiquement pendant votre réplique.
+- Seul le niveau sonore est partagé ; aucune voix n'est transmise ni enregistrée. Pour s'entendre, gardez un vocal à côté.
+
 ## Si ça coince
 
 | Problème | Solution |

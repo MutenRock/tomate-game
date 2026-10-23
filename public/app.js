@@ -1,3 +1,5 @@
+import { avatarSvg } from "/avatar.js";
+
 const app = document.querySelector("#app");
 const toast = document.querySelector("#toast");
 const sessionKey = "tomate.session.v031";
@@ -10,12 +12,16 @@ let serverOffset = 0;
 const params = new URLSearchParams(location.search);
 
 let publicUrl = "";
+let lanUrls = [];
+let costumes = null;
 
 bootstrap();
 
 async function bootstrap() {
   applyPreferences();
   spawnRain();
+  try { costumes = await api("/api/costumes"); } catch {}
+  requestAnimationFrame(voiceLoop);
   try { publicUrl = String((await api("/api/health")).publicUrl || "").replace(/\/+$/, ""); } catch {}
   if (session) {
     try {
@@ -31,7 +37,7 @@ function renderLanding() {
   app.innerHTML = `<main class="landing">
     <section class="hero"><img class="hero-logo" src="/assets/tomato.svg" alt=""><div class="hero-text"><p class="kicker">PLAYTEST · V0.3.2</p><h1>Tomate <em>!</em></h1><p>Une histoire, un ou deux comédiens, un public imprévisible. Lisez, jouez, rattrapez-vous… et évitez les tomates.</p><div class="chips"><span>Tutoriel 2–3 min</span><span>Sur téléphone ou ordinateur</span><span>Jouable à distance</span></div></div></section>
     <section class="entry-grid">
-      <form id="createForm" class="card"><h2>Créer une salle</h2><label>Pseudo<input name="name" maxlength="24" required></label><fieldset><legend>Format</legend><label><input type="radio" name="actorSlots" value="1" checked> 1 comédien, deux rôles</label><label><input type="radio" name="actorSlots" value="2"> 2 comédiens</label></fieldset><button class="primary">Ouvrir le rideau</button></form>
+      <form id="createForm" class="card"><h2>Créer une salle</h2><label>Pseudo<input name="name" maxlength="24" required></label><fieldset><legend>Format</legend><label><input type="radio" name="actorSlots" value="1" checked> 1 comédien, deux rôles</label><label><input type="radio" name="actorSlots" value="2"> 2 comédiens (public facultatif)</label></fieldset><button class="primary">Ouvrir le rideau</button></form>
       <form id="joinForm" class="card"><h2>Rejoindre</h2><label>Code de salle<input name="code" maxlength="5" value="${escapeHtml(joinCode)}" required></label><label>Pseudo<input name="name" maxlength="24" required></label><fieldset><legend>Place</legend><label><input type="radio" name="role" value="audience" checked> Public</label><label><input type="radio" name="role" value="actor"> Comédien 2</label></fieldset><button>Rejoindre</button></form>
       <form id="reclaimForm" class="card compact-card"><h2>Reprendre ma place</h2><p>À utiliser après un changement d’appareil ou une perte de session.</p><label>Code de salle<input name="code" maxlength="5" value="${escapeHtml(joinCode)}" required></label><label>Pseudo exact<input name="name" maxlength="24" required></label><label>Code de reprise<input name="reclaimCode" maxlength="6" required></label><button>Reprendre</button></form>
     </section>
@@ -66,6 +72,7 @@ function connect() {
   events?.close();
   events = new EventSource(`/api/rooms/${session.roomCode}/events?playerId=${encodeURIComponent(session.playerId)}&token=${encodeURIComponent(session.token)}`);
   events.addEventListener("state", (event) => { setState(JSON.parse(event.data)); render(); });
+  events.addEventListener("voice", (event) => { const { p, l } = JSON.parse(event.data); const remote = remoteVoice.get(p) || { level: 0 }; remote.target = l / 8; remote.at = performance.now(); remoteVoice.set(p, remote); });
   events.onerror = () => notify("Reconnexion au serveur…");
   clearInterval(clockTimer); clockTimer = setInterval(updateTimers, 250);
 }
@@ -93,24 +100,24 @@ function mainPanel() {
 function lobbyPanel() {
   const selected = state.availableScenes?.find((scene) => scene.id === state.scene.id);
   const host = state.me.isHost ? `<div class="host-controls"><label>Format<select id="slotSelect"><option value="1" ${state.actorSlots===1?"selected":""}>Solo — deux rôles</option><option value="2" ${state.actorSlots===2?"selected":""}>Duo — un rôle chacun</option></select></label><label>Histoire<select id="sceneSelect">${state.availableScenes.map((scene)=>`<option value="${scene.id}" ${scene.id===state.scene.id?"selected":""}>${scene.tutorial?"Tutoriel · ":""}${escapeHtml(scene.title)} · ${scene.lineCount} répliques</option>`).join("")}</select></label>${selected?`<div class="story-info"><strong>${escapeHtml(selected.theme)}</strong><span>${selected.tutorial?"Tutoriel conseillé avant le premier test · ":""}${Math.ceil(selected.durationSeconds/60)} min</span></div>`:""}<button class="primary big" data-command="START_MATCH" ${state.canStart?"":"disabled"}>Commencer</button>${state.startBlockers.length?`<ul class="blockers">${state.startBlockers.map((item)=>`<li>${escapeHtml(item)}</li>`).join("")}</ul>`:""}</div>` : `<p class="waiting">L’hôte prépare la partie.</p>`;
-  return `<p class="kicker">SALON</p><h2>${escapeHtml(state.scene.title)}</h2><p>${escapeHtml(state.scene.theme)}</p><div class="invite"><strong>${state.roomCode}</strong><button id="copyJoin">Copier le lien</button></div>${reclaimBox()}${playerReadiness()}<button class="ready ${state.me.ready?"is-ready":""}" data-command="TOGGLE_READY" data-ready="${!state.me.ready}">${state.me.ready?"✓ Je suis prêt":"Je suis prêt"}</button>${host}`;
+  return `<p class="kicker">SALON</p><h2>${escapeHtml(state.scene.title)}</h2><p>${escapeHtml(state.scene.theme)}</p><div class="invite"><strong>${state.roomCode}</strong><button id="copyJoin">Copier le lien</button></div>${reclaimBox()}${playerReadiness()}${wardrobePanel()}<button class="ready ${state.me.ready?"is-ready":""}" data-command="TOGGLE_READY" data-ready="${!state.me.ready}">${state.me.ready?"✓ Je suis prêt":"Je suis prêt"}</button>${host}`;
 }
 function reclaimBox() { return `<div class="reclaim"><span>Votre code de reprise</span><strong>${state.me.reclaimCode}</strong><button id="copyReclaim">Copier</button><small>Conservez-le seulement pour cette session.</small></div>`; }
 function playerReadiness() {
-  return `<div class="readiness">${state.players.map((player)=>`<div class="ready-row"><span class="dot ${player.connected?"online":"offline"}"></span><div><strong>${escapeHtml(player.name)}</strong><small>${roleText(player)} · ${player.connected?"connecté":"déconnecté"}</small></div><b class="ready-state ${player.ready?"yes":"no"}">${player.ready?"PRÊT":"PAS PRÊT"}</b></div>`).join("")}</div>`;
+  return `<div class="readiness">${state.players.map((player)=>`<div class="ready-row">${miniAvatar(player)}<span class="dot ${player.connected?"online":"offline"}"></span><div><strong>${escapeHtml(player.name)}</strong><small>${roleText(player)} · ${player.connected?"connecté":"déconnecté"}</small></div><b class="ready-state ${player.ready?"yes":"no"}">${player.ready?"PRÊT":"PAS PRÊT"}</b></div>`).join("")}</div>`;
 }
 function briefingPanel() {
-  if (state.me.role === "audience") return `<p class="kicker">${state.phase==="preparation"?"PRÉPARATION":"BRIEFING"}</p><h2>${escapeHtml(state.scene.title)}</h2><div class="mission"><span>VOTRE MISSION</span><p>${escapeHtml(state.private.brief)}</p></div>${state.scene.tutorial?`<div class="tutorial-tip">🎓 Le tutoriel vous indiquera quelle réaction essayer à chaque étape.</div>`:""}${state.me.isHost?`<button data-command="ADVANCE_PHASE">Passer cette phase</button>`:""}`;
-  return `<p class="kicker">${state.phase==="preparation"?"PRÉPARATION":"BRIEFING"}</p><div class="identity"><span>VOUS JOUEZ</span><h2>${state.actorSlots===1?"LES DEUX PERSONNAGES":escapeHtml(state.private.character.name)}</h2></div><div class="brief-grid"><div class="mission"><span>MISSION</span><p>${escapeHtml(state.private.brief)}</p></div><div class="mission secret"><span>OBJECTIF SECRET</span><p>${escapeHtml(state.private.secretGoal)}</p></div></div>${state.scene.tutorial?`<div class="tutorial-tip">🎓 L’écran séparera toujours ce qui est à lire de ce qui est à jouer.</div>`:""}${state.me.isHost?`<button data-command="ADVANCE_PHASE">Passer cette phase</button>`:""}`;
+  if (state.me.role === "audience") return `<p class="kicker">${state.phase==="preparation"?"PRÉPARATION":"BRIEFING"}</p><h2>${escapeHtml(state.scene.title)}</h2><div class="mission"><span>VOTRE MISSION</span><p>${escapeHtml(state.private.brief)}</p></div>${state.scene.tutorial?`<div class="tutorial-tip">🎓 Le tutoriel vous indiquera quelle réaction essayer à chaque étape.</div>`:""}${wardrobePanel()}${state.me.isHost?`<button data-command="ADVANCE_PHASE">Passer cette phase</button>`:""}`;
+  return `<p class="kicker">${state.phase==="preparation"?"PRÉPARATION":"BRIEFING"}</p><div class="identity"><span>VOUS JOUEZ</span><h2>${state.actorSlots===1?"LES DEUX PERSONNAGES":escapeHtml(state.private.character.name)}</h2></div><div class="brief-grid"><div class="mission"><span>MISSION</span><p>${escapeHtml(state.private.brief)}</p></div><div class="mission secret"><span>OBJECTIF SECRET</span><p>${escapeHtml(state.private.secretGoal)}</p></div></div>${state.scene.tutorial?`<div class="tutorial-tip">🎓 L’écran séparera toujours ce qui est à lire de ce qui est à jouer.</div>`:""}${wardrobePanel()}${state.me.isHost?`<button data-command="ADVANCE_PHASE">Passer cette phase</button>`:""}`;
 }
 
 function actorPanel() {
   const line = state.private.currentLine || {}; const character = state.private.currentCharacter || {}; const myTurn = state.private.isMyTurn;
-  return `<div class="stage-head"><div><p class="kicker">${escapeHtml(line.act||state.currentAct)}</p><h2>${escapeHtml(state.scene.title)}</h2></div><span>${state.lineIndex+1}/${state.private.totalLines}</span></div><div class="turn ${myTurn?"mine":"wait"}"><strong>${myTurn?"▶ À TOI — LIS MAINTENANT":`⏸ ATTENDS — ${escapeHtml(character.name)} PARLE`}</strong><span>${myTurn?"Les autres vous écoutent.":"Préparez votre prochaine intervention."}</span></div>${state.scene.tutorial&&line.tutorialActorTip?`<div class="tutorial-tip">🎓 ${escapeHtml(line.tutorialActorTip)}</div>`:""}<div class="script ${hasEffect("blackout")?"dark":""}">${effectBanners()}<div class="splats">${state.effects.filter((effect)=>effect.type==="tomato").map(splatHtml).join("")}</div><section class="direction"><span>NE PAS LIRE — DIDASCALIE</span><p>${escapeHtml(line.stageDirection)}</p></section><section class="intention"><span>INTENTION</span><p>${escapeHtml(line.emotion)}</p></section><section class="spoken"><span>${myTurn?"TEXTE À DIRE À VOIX HAUTE":"RÉPLIQUE À ÉCOUTER"}</span><b>${escapeHtml(character.name||line.speaker||"")}</b><p>${escapeHtml(line.text)}</p></section><div class="after"><section><span>APRÈS</span><p>${escapeHtml(line.after)}</p></section><section><span>REPÈRE</span><p>${escapeHtml(line.cue)}</p></section></div></div><div class="actions">${myTurn?`<button class="primary big" data-command="NEXT_LINE">J’ai terminé cette réplique</button><button data-command="RECOVERED">J’ai intégré l’incident</button>`:`<div class="waiting">Le bouton apparaîtra à votre tour.</div>`}${state.me.isHost?`<button data-command="FORCE_NEXT_LINE">Forcer le passage</button><button data-command="END_MATCH">Forcer le verdict</button>`:""}</div>`;
+  return `<div class="stage-head"><div><p class="kicker">${escapeHtml(line.act||state.currentAct)}</p><h2>${escapeHtml(state.scene.title)}</h2></div><span>${state.lineIndex+1}/${state.private.totalLines}</span></div>${stageStrip()}${micChip()}<div class="turn ${myTurn?"mine":"wait"}"><strong>${myTurn?"▶ À TOI — LIS MAINTENANT":`⏸ ATTENDS — ${escapeHtml(character.name)} PARLE`}</strong><span>${myTurn?"Les autres vous écoutent.":"Préparez votre prochaine intervention."}</span></div>${state.scene.tutorial&&line.tutorialActorTip?`<div class="tutorial-tip">🎓 ${escapeHtml(line.tutorialActorTip)}</div>`:""}<div class="script ${hasEffect("blackout")?"dark":""}">${effectBanners()}<div class="splats">${state.effects.filter((effect)=>effect.type==="tomato").map(splatHtml).join("")}</div><section class="direction"><span>NE PAS LIRE — DIDASCALIE</span><p>${escapeHtml(line.stageDirection)}</p></section><section class="intention"><span>INTENTION</span><p>${escapeHtml(line.emotion)}</p></section><section class="spoken"><span>${myTurn?"TEXTE À DIRE À VOIX HAUTE":"RÉPLIQUE À ÉCOUTER"}</span><b>${escapeHtml(character.name||line.speaker||"")}</b><p>${escapeHtml(line.text)}</p></section><div class="after"><section><span>APRÈS</span><p>${escapeHtml(line.after)}</p></section><section><span>REPÈRE</span><p>${escapeHtml(line.cue)}</p></section></div></div><div class="actions">${myTurn?`<button class="primary big" data-command="NEXT_LINE">J’ai terminé cette réplique</button><button data-command="RECOVERED">J’ai intégré l’incident</button>`:`<div class="waiting">Le bouton apparaîtra à votre tour.</div>`}${state.me.isHost?`<button data-command="FORCE_NEXT_LINE">Forcer le passage</button><button data-command="END_MATCH">Forcer le verdict</button>`:""}</div>`;
 }
 function audiencePanel() {
   const current = state.private.currentLine || {}; const reactions = state.private.reactions || [];
-  return `<p class="kicker">PUBLIC</p><h2>${escapeHtml(state.scene.title)}</h2><div class="now"><span>EN CE MOMENT</span><strong>${escapeHtml(current.speaker||state.currentSpeaker)}</strong><small>${escapeHtml(current.act||state.currentAct)}</small></div>${state.scene.tutorial&&current.tutorialAudienceTip?`<div class="tutorial-tip">🎓 ${escapeHtml(current.tutorialAudienceTip)}</div>`:""}<div class="energy"><span class="pips" aria-label="${state.me.energy} tomates">${energyPips(state.me.energy)}</span><span>+1 tomate toutes les 20 secondes</span></div><div class="reactions">${reactions.map((reaction)=>reactionButton(reaction,current.recommendedReaction)).join("")}</div><p class="rule">Une bonne perturbation crée du jeu ; elle ne bloque pas la scène.</p>`;
+  return `<p class="kicker">PUBLIC</p><h2>${escapeHtml(state.scene.title)}</h2>${stageStrip()}<div class="now"><span>EN CE MOMENT</span><strong>${escapeHtml(current.speaker||state.currentSpeaker)}</strong><small>${escapeHtml(current.act||state.currentAct)}</small></div>${state.scene.tutorial&&current.tutorialAudienceTip?`<div class="tutorial-tip">🎓 ${escapeHtml(current.tutorialAudienceTip)}</div>`:""}<div class="energy"><span class="pips" aria-label="${state.me.energy} tomates">${energyPips(state.me.energy)}</span><span>+1 tomate toutes les 20 secondes</span></div><div class="reactions">${reactions.map((reaction)=>reactionButton(reaction,current.recommendedReaction)).join("")}</div><p class="rule">Une bonne perturbation crée du jeu ; elle ne bloque pas la scène.</p>`;
 }
 const reactionIcons = { tomato:"🍅", dramatic:"🎭", phone:"📞", forbidden:"🚫", blackout:"💡", applause:"👏" };
 function energyPips(energy) { return Array.from({length:Math.max(6,energy)},(_,index)=>`<i class="pip ${index<energy?"on":""}"></i>`).join(""); }
@@ -120,7 +127,7 @@ function reactionButton(reaction, recommended) {
 }
 function verdictPanel() {
   const verdict=state.verdict;
-  return `<p class="kicker">VERDICT</p><h2>${escapeHtml(verdict.title)}</h2><div class="score">${verdict.total}<small>/100</small></div><blockquote>${escapeHtml(verdict.quote)}</blockquote><div class="score-grid"><div><b>${verdict.continuity}</b><span>Histoire</span></div><div><b>${verdict.recovery}</b><span>Récupération</span></div><div><b>${verdict.audience}</b><span>Public</span></div><div><b>${verdict.castBalance}</b><span>${escapeHtml(verdict.castLabel)}</span></div></div>${feedbackPanel()}${state.me.isHost?`<div class="host-end"><button id="exportReport">Exporter le rapport JSON</button><span>${state.feedbackSummary.submitted}/${state.feedbackSummary.expected} retours reçus</span><button class="primary" data-command="RESTART">Nouvelle partie</button></div>`:""}`;
+  return `<p class="kicker">VERDICT</p><h2>${escapeHtml(verdict.title)}</h2><div class="score">${verdict.total}<small>/100</small></div><blockquote>${escapeHtml(verdict.quote)}</blockquote><div class="score-grid"><div><b>${verdict.continuity}</b><span>Histoire</span></div><div><b>${verdict.recovery}</b><span>Récupération</span></div><div><b>${verdict.audience??"—"}</b><span>Public</span></div><div><b>${verdict.castBalance}</b><span>${escapeHtml(verdict.castLabel)}</span></div></div>${feedbackPanel()}${state.me.isHost?`<div class="host-end"><button id="exportReport">Exporter le rapport JSON</button><span>${state.feedbackSummary.submitted}/${state.feedbackSummary.expected} retours reçus</span><button class="primary" data-command="RESTART">Nouvelle partie</button></div>`:""}`;
 }
 function feedbackPanel() {
   if (state.me.feedbackSubmitted) return `<div class="feedback-thanks"><strong>Merci !</strong><span>Votre retour est enregistré dans le rapport de playtest.</span></div>`;
@@ -130,7 +137,7 @@ function rating(name,label) { return `<label>${label}<select name="${name}" requ
 
 function sidePanel() {
   const disconnectedActor = state.players.find((player)=>player.role==="actor"&&!player.connected);
-  return `<section><div class="side-title"><span>TROUPE</span><b>${state.players.length}/12</b></div>${state.players.map((player)=>`<div class="player"><span class="dot ${player.connected?"online":"offline"}"></span><div><strong>${escapeHtml(player.name)}</strong><small>${roleText(player)} · ${player.ready?"prêt":"pas prêt"}</small></div>${replacementButton(player,disconnectedActor)}</div>`).join("")}</section><section class="log"><div class="side-title"><span>JOURNAL</span></div><ol>${state.events.slice(0,12).map((event)=>`<li class="${event.kind}">${escapeHtml(event.text)}</li>`).join("")}</ol></section>`;
+  return `<section><div class="side-title"><span>TROUPE</span><b>${state.players.length}/12</b></div>${state.players.map((player)=>`<div class="player">${miniAvatar(player)}<span class="dot ${player.connected?"online":"offline"}"></span><div><strong>${escapeHtml(player.name)}</strong><small>${roleText(player)} · ${player.ready?"prêt":"pas prêt"}</small></div>${replacementButton(player,disconnectedActor)}</div>`).join("")}</section><section class="log"><div class="side-title"><span>JOURNAL</span></div><ol>${state.events.slice(0,12).map((event)=>`<li class="${event.kind}">${escapeHtml(event.text)}</li>`).join("")}</ol></section>`;
 }
 function replacementButton(player,disconnectedActor) {
   if (!state.me.isHost||!disconnectedActor||player.role!=="audience"||!player.connected||state.phase==="verdict") return "";
@@ -152,6 +159,9 @@ function bindGame() {
   document.querySelectorAll("[data-command]").forEach((button)=>button.addEventListener("click",()=>command(button.dataset.command,{ready:button.dataset.ready==="true"})));
   document.querySelectorAll("[data-reaction]").forEach((button)=>button.addEventListener("click",async()=>{ await command("REACTION",{reactionId:button.dataset.reaction}); notify(`${button.dataset.label} envoyée à ${state.currentSpeaker}.`); }));
   document.querySelectorAll("[data-replace-slot]").forEach((button)=>button.addEventListener("click",()=>command("REPLACE_ACTOR",{actorSlot:Number(button.dataset.replaceSlot),playerId:button.dataset.playerId})));
+  document.querySelector("#micToggle")?.addEventListener("click",toggleMic);
+  document.querySelector("#randomAvatar")?.addEventListener("click",randomizeAvatar);
+  document.querySelectorAll("[data-avatar-slot]").forEach((button)=>button.addEventListener("click",()=>command("SET_AVATAR",{[button.dataset.avatarSlot]:button.dataset.avatarValue})));
   document.querySelector("#feedbackForm")?.addEventListener("submit",submitFeedback);
   document.querySelector("#exportReport")?.addEventListener("click",exportReport);
 }
@@ -159,7 +169,7 @@ async function submitFeedback(event) { event.preventDefault(); const data=Object
 async function exportReport() {
   try { const report=await api(`/api/rooms/${session.roomCode}/report?playerId=${encodeURIComponent(session.playerId)}&token=${encodeURIComponent(session.token)}`); const blob=new Blob([JSON.stringify(report,null,2)],{type:"application/json"}); const url=URL.createObjectURL(blob); const link=document.createElement("a"); link.href=url; link.download=`tomate-playtest-${session.roomCode}-${new Date().toISOString().slice(0,10)}.json`; link.click(); URL.revokeObjectURL(url); notify("Rapport exporté."); } catch(error) { notify(error.message,true); }
 }
-function leaveRoom() { events?.close(); sessionStorage.removeItem(sessionKey); session=null; state=null; history.replaceState({},"",location.pathname); renderLanding(); }
+function leaveRoom() { stopMic(); events?.close(); sessionStorage.removeItem(sessionKey); session=null; state=null; history.replaceState({},"",location.pathname); renderLanding(); }
 async function command(type,payload={}) { if(busy)return; busy=true; try { setState(await api(`/api/rooms/${session.roomCode}/commands`,{method:"POST",body:{playerId:session.playerId,token:session.token,type,payload}})); render(); } catch(error) { notify(error.message,true); } finally { busy=false; } }
 
 function updateTimers() {
@@ -172,7 +182,89 @@ function setState(next) { state=next; if(Number.isFinite(state?.serverNow))serve
 function nowServer() { return Date.now()+serverOffset; }
 function phaseLabel(phase) { return ({lobby:"Salon",briefing:"Briefing",preparation:"Préparation",performance:"Représentation",finale:"Finale",verdict:"Verdict"})[phase]||phase; }
 
-function shareOrigin() { return publicUrl || location.origin; }
+
+// ---------- Personnage, garde-robe et micro ----------
+const wardrobeOpen = () => ["lobby", "briefing", "preparation"].includes(state?.phase);
+function wardrobePanel() {
+  if (!costumes || !wardrobeOpen()) return "";
+  const me = state.players.find((player) => player.id === state.me.id); if (!me) return "";
+  const groups = [["skin", "Couleur"], ["outfit", "Costume"], ["hat", "Chapeau"], ["accessory", "Accessoire"]];
+  const options = ([slot, label]) => `<div class="opt-group"><span>${label}</span><div class="opt-row">${costumes[slot].map((option) => `<button type="button" class="opt ${slot === "skin" ? "swatch" : ""} ${me.avatar[slot] === option.id ? "selected" : ""}" data-avatar-slot="${slot}" data-avatar-value="${option.id}" aria-pressed="${me.avatar[slot] === option.id}" title="${escapeHtml(option.label)}" ${slot === "skin" ? `style="--c:${option.color}" aria-label="${escapeHtml(option.label)}"` : ""}>${slot === "skin" ? "" : escapeHtml(option.label)}</button>`).join("")}</div></div>`;
+  return `<section class="wardrobe"><div class="wardrobe-head"><h3>Garde-robe</h3><button id="randomAvatar" type="button">🎲 Au hasard</button></div><div class="wardrobe-body"><div class="wardrobe-preview"><div class="preview-avatar">${avatarSvg(me.avatar, { id: me.id, label: "Votre personnage" })}</div>${micBox()}</div><div class="wardrobe-options">${groups.map(options).join("")}</div></div></section>`;
+}
+function micBox() {
+  return `<div class="mic-box"><button id="micToggle" type="button" class="${voice.active ? "on" : ""}">${voice.active ? "🎤 Micro actif — couper" : "🎤 Activer le micro"}</button><div class="meter"><i data-meter></i></div><small>${escapeHtml(voice.error || "Parlez : la bouche de votre personnage suit votre voix. Elle reste sur votre appareil, seul le niveau sonore est partagé.")}</small></div>`;
+}
+function micChip() {
+  if (state.me.role !== "actor") return "";
+  return `<div class="mic-chip"><button id="micToggle" type="button" class="${voice.active ? "on" : ""}">${voice.active ? "🎤 Micro actif" : "🎤 Activer le micro"}</button><span>${voice.active ? "La bouche suit votre voix." : escapeHtml(voice.error || "Sans micro, la bouche bouge automatiquement pendant votre réplique.")}</span></div>`;
+}
+function stageStrip() {
+  const actors = state.actorIds.slice(0, state.actorSlots).map((id) => state.players.find((player) => player.id === id)).filter(Boolean);
+  if (!actors.length) return "";
+  return `<div class="stage-strip">${actors.map((player) => `<figure class="stage-actor ${player.id === state.activeActorId ? "active" : ""}"><div class="stage-avatar">${avatarSvg(player.avatar, { id: player.id, label: player.name })}</div><figcaption><b>${escapeHtml(player.name)}</b><span>${escapeHtml(state.actorSlots === 1 ? state.currentSpeaker : player.characterName || "")}</span></figcaption></figure>`).join("")}</div>`;
+}
+function miniAvatar(player) { return `<span class="mini-avatar">${avatarSvg(player.avatar, { id: player.id, crop: "head", label: "" })}</span>`; }
+
+const voice = { active: false, level: 0, error: "", ctx: null, analyser: null, buffer: null, stream: null, lastSent: 0, lastQ: 0 };
+const remoteVoice = new Map();
+async function toggleMic() {
+  if (voice.active) { stopMic(); render(); return; }
+  if (!navigator.mediaDevices?.getUserMedia) {
+    voice.error = window.isSecureContext ? "Micro indisponible sur cet appareil. Bouche automatique pendant votre réplique." : "Le micro exige HTTPS (lien npm run remote) ou localhost. Bouche automatique pendant votre réplique.";
+    render(); return;
+  }
+  try {
+    voice.stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true } });
+    voice.ctx = new (window.AudioContext || window.webkitAudioContext)(); await voice.ctx.resume?.();
+    voice.analyser = voice.ctx.createAnalyser(); voice.analyser.fftSize = 1024;
+    voice.ctx.createMediaStreamSource(voice.stream).connect(voice.analyser);
+    voice.buffer = new Uint8Array(voice.analyser.fftSize); voice.active = true; voice.error = "";
+  } catch { stopMic(); voice.error = "Accès au micro refusé. Bouche automatique pendant votre réplique."; }
+  render();
+}
+function stopMic() {
+  voice.stream?.getTracks().forEach((track) => track.stop()); voice.ctx?.close().catch(() => {});
+  voice.active = false; voice.level = 0; voice.stream = voice.ctx = voice.analyser = null; sendVoice(0, true);
+}
+function autoTalking() { return state?.me.role === "actor" && state.me.isMyTurn && ["performance", "finale"].includes(state.phase) && !state.paused; }
+function readLevel(now) {
+  let target = 0;
+  if (voice.active && voice.analyser) {
+    voice.analyser.getByteTimeDomainData(voice.buffer);
+    let sum = 0; for (const value of voice.buffer) { const delta = (value - 128) / 128; sum += delta * delta; }
+    target = Math.min(1, Math.max(0, (Math.sqrt(sum / voice.buffer.length) - 0.015) * 9));
+  } else if (autoTalking()) target = 0.25 + 0.6 * Math.abs(Math.sin(now / 90)) * (0.5 + 0.5 * Math.sin(now / 230));
+  voice.level = target > voice.level ? voice.level + (target - voice.level) * 0.7 : voice.level * 0.82;
+  if (voice.level < 0.03) voice.level = 0;
+}
+function sendVoice(quantized, force = false) {
+  if (!session) return;
+  const now = performance.now();
+  if (!force && (now - voice.lastSent < 100 || (quantized === voice.lastQ && !(quantized > 0 && now - voice.lastSent > 200)))) return;
+  voice.lastSent = now; voice.lastQ = quantized;
+  fetch(`/api/rooms/${session.roomCode}/voice`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ playerId: session.playerId, token: session.token, level: quantized }), keepalive: true }).catch(() => {});
+}
+function voiceLoop(now) {
+  if (state) {
+    readLevel(now);
+    if (state.me.role === "actor" || voice.active) sendVoice(Math.round(voice.level * 8));
+    document.querySelectorAll("[data-avatar]").forEach((element) => {
+      const id = element.dataset.avatar; let level = 0;
+      if (id === state.me.id) level = voice.level;
+      else { const remote = remoteVoice.get(id); if (remote) { const target = now - remote.at > 450 ? 0 : remote.target; remote.level = target > remote.level ? remote.level + (target - remote.level) * 0.6 : remote.level * 0.8; if (remote.level < 0.03) remote.level = 0; level = remote.level; } }
+      element.style.setProperty("--open", level.toFixed(2)); element.classList.toggle("talking", level > 0.18);
+    });
+    document.querySelectorAll("[data-meter]").forEach((element) => { element.style.width = `${Math.round(voice.level * 100)}%`; });
+  }
+  requestAnimationFrame(voiceLoop);
+}
+function randomizeAvatar() {
+  const pick = (list) => list[Math.floor(Math.random() * list.length)].id;
+  command("SET_AVATAR", Object.fromEntries(Object.entries(costumes).map(([slot, list]) => [slot, pick(list)])));
+}
+
+function shareOrigin() { const local = ["localhost","127.0.0.1","[::1]"].includes(location.hostname); return publicUrl || (local && lanUrls[0]) || location.origin; }
 function spawnRain() {
   const rain = document.querySelector("#rain"); if (!rain || rain.childElementCount) return;
   rain.innerHTML = Array.from({length:9},(_,index)=>`<i style="--x:${6+index*11+(index%3)*3}%;--s:${22+(index*7)%20}px;--d:${14+(index*5)%9}s;--delay:-${(index*3)%13}s;--rot:${(index%2?1:-1)*(140+index*20)}deg"></i>`).join("");

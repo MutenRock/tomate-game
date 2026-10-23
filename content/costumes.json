@@ -1,0 +1,44 @@
+{
+  "skin": [
+    { "id": "tomato", "label": "Tomate", "color": "#e5503f" },
+    { "id": "peach", "label": "Pêche", "color": "#f6c7a0" },
+    { "id": "tan", "label": "Caramel", "color": "#d79b6a" },
+    { "id": "cocoa", "label": "Cacao", "color": "#8a5a3c" },
+    { "id": "mint", "label": "Menthe", "color": "#8fd6b0" },
+    { "id": "sky", "label": "Ciel", "color": "#8cc4ee" },
+    { "id": "lavender", "label": "Lavande", "color": "#c3a6ea" },
+    { "id": "banana", "label": "Banane", "color": "#f4d964" }
+  ],
+  "outfit": [
+    { "id": "tshirt", "label": "T-shirt" },
+    { "id": "king", "label": "Manteau royal" },
+    { "id": "tux", "label": "Smoking" },
+    { "id": "dress", "label": "Robe de gala" },
+    { "id": "armor", "label": "Armure" },
+    { "id": "space", "label": "Combinaison spatiale" },
+    { "id": "vamp", "label": "Cape de vampire" },
+    { "id": "apron", "label": "Tablier" },
+    { "id": "ghost", "label": "Drap de fantôme" },
+    { "id": "robot", "label": "Plastron robot" }
+  ],
+  "hat": [
+    { "id": "none", "label": "Aucun" },
+    { "id": "crown", "label": "Couronne" },
+    { "id": "tophat", "label": "Haut-de-forme" },
+    { "id": "beret", "label": "Béret" },
+    { "id": "toque", "label": "Toque" },
+    { "id": "wizard", "label": "Chapeau pointu" },
+    { "id": "helmet", "label": "Casque" },
+    { "id": "antenna", "label": "Antennes" }
+  ],
+  "accessory": [
+    { "id": "none", "label": "Aucun" },
+    { "id": "glasses", "label": "Lunettes rondes" },
+    { "id": "sunglasses", "label": "Lunettes noires" },
+    { "id": "monocle", "label": "Monocle" },
+    { "id": "mustache", "label": "Moustache" },
+    { "id": "bowtie", "label": "Nœud papillon" },
+    { "id": "fangs", "label": "Crocs" },
+    { "id": "freckles", "label": "Taches de rousseur" }
+  ]
+}

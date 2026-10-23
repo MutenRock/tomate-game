@@ -71,6 +71,16 @@ Le prototype est suffisamment complet pour être confié à un groupe extérieur
 - aucun pseudo dans l'export ;
 - aucun audio enregistré.
 
+### Duo sans public, garde-robe et bouche pilotée par le micro (v0.3.2)
+
+- une partie peut démarrer avec uniquement les comédiens (le public est facultatif) ; sans public, le score est ramené sur 100 et le verdict affiche « — » pour la ligne Public ;
+- chaque joueur a un petit personnage SVG (`public/avatar.js`, catalogue `content/costumes.json`) : couleur, costume, chapeau, accessoire ;
+- garde-robe ouverte en salon, briefing et préparation (commande `SET_AVATAR`, validée côté serveur), fermée dès que la scène commence ;
+- les personnages des comédiens sont visibles sur scène (écran comédien et public), celui qui parle est mis en avant ;
+- la bouche suit le niveau du micro (Web Audio, analyse locale). Seul un niveau 0–8 est envoyé (`POST /api/rooms/:code/voice`, relayé en SSE `voice`), aucun audio n'est transmis ni enregistré ;
+- le micro exige HTTPS ou localhost : en HTTP sur le réseau local ou sans permission, la bouche bouge automatiquement pendant la réplique du comédien ;
+- non testé avec un vrai micro dans l'environnement de développement (seule la voie « niveau relayé » et le mode automatique l'ont été).
+
 ### Habillage visuel et lancement distant (v0.3.2)
 
 - thème théâtre : rideaux, marquise lumineuse, logo tomate SVG (`public/assets/`) ;

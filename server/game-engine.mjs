@@ -4,7 +4,7 @@ export const PHASES = ["lobby", "briefing", "preparation", "performance", "final
 const PHASE_DURATIONS = { briefing: 25, preparation: 45, finale: 45 };
 const MAX_PLAYERS = 12;
 
-export function createEngine({ scenes, reactions, onBroadcast }) {
+export function createEngine({ scenes, reactions, costumes = {}, onBroadcast }) {
   const rooms = new Map();
   const reactionMap = new Map(reactions.map((reaction) => [reaction.id, reaction]));
 
@@ -19,6 +19,9 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
       if (!rooms.has(value)) return value;
     }
     throw new Error("Impossible de générer un code de salle.");
+  }
+  function randomAvatar() {
+    return Object.fromEntries(Object.entries(costumes).map(([slot, options]) => [slot, options[crypto.randomInt(options.length)].id]));
   }
   function token() { return crypto.randomBytes(24).toString("base64url"); }
   function id(prefix) { return `${prefix}_${crypto.randomBytes(8).toString("hex")}`; }
@@ -163,6 +166,7 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
         requireHost(room, player); requireLobby(room); setActorSlots(room, Number(payload.actorSlots)); break;
       case "SET_PLAYER_ROLE":
         requireHost(room, player); requireLobby(room); setPlayerRole(room, payload.playerId, payload.role); break;
+      case "SET_AVATAR": setAvatar(room, player, payload); break;
       case "TOGGLE_READY":
         requireLobby(room);
         player.ready = typeof payload.ready === "boolean" ? payload.ready : !player.ready;
@@ -192,6 +196,15 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
     }
     broadcast(room);
     return personalizedState(room, player);
+  }
+
+  function setAvatar(room, player, payload) {
+    if (!["lobby", "briefing", "preparation"].includes(room.phase)) throw gameError(409, "Le vestiaire est fermé : la scène a commencé.");
+    for (const [slot, options] of Object.entries(costumes)) {
+      if (payload[slot] === undefined) continue;
+      if (!options.some((option) => option.id === payload[slot])) throw gameError(400, "Costume inconnu.");
+      player.avatar[slot] = payload[slot];
+    }
   }
 
   function setActorSlots(room, value) {
@@ -326,7 +339,7 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
       averages[key] = feedback.length ? Number((feedback.reduce((sum, item) => sum + item[key], 0) / feedback.length).toFixed(2)) : null;
     }
     return {
-      version: "0.3.1",
+      version: "0.3.2",
       exportedAt: nowIso(),
       scene: { id: sceneFor(room).id, title: sceneFor(room).title, tutorial: Boolean(sceneFor(room).tutorial) },
       mode: room.actorSlots === 2 ? "duo" : "solo",
@@ -411,10 +424,12 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
     room.metrics.finishedAt = Date.now();
     const continuity = Math.round(35 * Math.min(1, room.metrics.linesCompleted / scene.lines.length));
     const recovery = Math.min(25, room.metrics.recoveries * 8);
-    const audience = Math.min(20, room.metrics.applause * 4 + Math.min(10, room.metrics.negativeReactions));
+    const hasAudience = [...room.players.values()].some((item) => item.role === "audience");
+    const audience = hasAudience ? Math.min(20, room.metrics.applause * 4 + Math.min(10, room.metrics.negativeReactions)) : null;
     const ending = room.metrics.finaleReached ? 10 : 0;
     const castBalance = room.actorSlots === 2 ? Math.min(10, Math.min(room.metrics.actorTurns.a || 0, room.metrics.actorTurns.b || 0) * 2) : Math.min(10, Math.floor(room.metrics.linesCompleted / 3));
-    const total = Math.min(100, continuity + recovery + audience + ending + castBalance);
+    const sum = continuity + recovery + (audience ?? 0) + ending + castBalance;
+    const total = Math.min(100, hasAudience ? sum : Math.round(sum * 100 / 80));
     room.verdict = {
       total, continuity, recovery, audience, ending, castBalance,
       castLabel: room.actorSlots === 2 ? "Duo" : "Interprétation",
@@ -458,7 +473,7 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
       events: room.events,
       players: [...room.players.values()].map((participant) => ({
         id: participant.id, name: participant.name, role: participant.role, actorSlot: participant.actorSlot,
-        ready: participant.ready, connected: participant.connected,
+        ready: participant.ready, connected: participant.connected, avatar: participant.avatar,
         characterName: participant.role === "actor" ? (room.actorSlots === 1 ? "Double rôle" : characterForPlayer(room, participant).name) : null
       })),
       actorSlots: room.actorSlots,
@@ -472,7 +487,7 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
       me: {
         id: player.id, name: player.name, role: player.role, actorSlot: player.actorSlot,
         characterName: isActor ? (room.actorSlots === 1 ? "Double rôle" : characterForPlayer(room, player).name) : null,
-        isHost: player.id === room.hostId, isMyTurn: myTurn, ready: player.ready, connected: player.connected,
+        avatar: player.avatar, isHost: player.id === room.hostId, isMyTurn: myTurn, ready: player.ready, connected: player.connected,
         reclaimCode: player.reclaimCode, feedbackSubmitted: room.feedback.has(player.id), energy: player.energy, cooldowns: player.cooldowns
       }
     };
@@ -507,7 +522,6 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
     if (actors.some((actor) => actor && !actor.connected)) blockers.push("Un comédien n’est pas connecté.");
     if (actors.some((actor) => actor && !actor.ready)) blockers.push("Tous les comédiens doivent être prêts.");
     const audience = [...room.players.values()].filter((item) => item.role === "audience");
-    if (audience.length === 0) blockers.push("Au moins une personne doit rejoindre le public.");
     if (audience.some((item) => item.connected && !item.ready)) blockers.push("Tous les joueurs connectés doivent être prêts.");
     return [...new Set(blockers)];
   }
@@ -541,7 +555,7 @@ export function createEngine({ scenes, reactions, onBroadcast }) {
   function playerRecord(playerId, name, role, actorSlot) {
     return {
       id: playerId, token: token(), reclaimCode: randomString(6), name: cleanName(name), role, actorSlot,
-      ready: false, connected: false, joinedAt: Date.now(), lastSeenAt: Date.now(), energy: 5, lastEnergyAt: Date.now(), cooldowns: {}
+      avatar: randomAvatar(), ready: false, connected: false, joinedAt: Date.now(), lastSeenAt: Date.now(), energy: 5, lastEnergyAt: Date.now(), cooldowns: {}
     };
   }
   function cleanName(value) { const result = String(value || "Joueur").trim().replace(/[<>]/g, "").slice(0, 24); return result || "Joueur"; }

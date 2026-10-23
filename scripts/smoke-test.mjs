@@ -4,7 +4,7 @@ const port=4199;const base=`http://127.0.0.1:${port}`;
 const server=spawn(process.execPath,["server/server.mjs"],{cwd:fileURLToPath(new URL("..",import.meta.url)),env:{...process.env,PORT:String(port),HOST:"127.0.0.1"},stdio:["ignore","pipe","pipe"]});
 let logs="";server.stdout.on("data",(c)=>logs+=c);server.stderr.on("data",(c)=>logs+=c);
 const streams=[];
-try{await waitForServer();await testReadiness();await testDuoReconnectFeedback();console.log("Smoke test passed — ready state, pause/reclaim, duo, feedback and report validated.");}finally{for(const stream of streams)stream.abort();server.kill("SIGTERM");}
+try{await waitForServer();await testReadiness();await testDuoReconnectFeedback();await testDuoWithoutAudienceAvatarVoice();console.log("Smoke test passed — ready state, pause/reclaim, duo, feedback, report, wardrobe, duo without audience and voice relay validated.");}finally{for(const stream of streams)stream.abort();server.kill("SIGTERM");}
 
 async function testReadiness(){
   const host=await post("/api/rooms",{name:"Host",actorSlots:1});
@@ -36,9 +36,30 @@ async function testDuoReconnectFeedback(){
   await command(host,"SUBMIT_FEEDBACK",{roleClarity:5,actionClarity:5,durationFit:4,disruptionsFun:5,replay:"yes",memorableMoment:"La tomate du tutoriel."});
   await command(audience,"SUBMIT_FEEDBACK",{roleClarity:4,actionClarity:5,durationFit:4,disruptionsFun:4,replay:"yes",memorableMoment:"Le passage de parole."});
   const report=await get(`/api/rooms/${host.roomCode}/report?playerId=${host.playerId}&token=${host.token}`);
-  if(report.version!=="0.3.1"||report.feedback.submitted!==2)throw new Error("Le rapport de playtest est incomplet.");
+  if(report.version!=="0.3.2"||report.feedback.submitted!==2)throw new Error("Le rapport de playtest est incomplet.");
   const serialized=JSON.stringify(report);if(serialized.includes("Alice")||serialized.includes("Bob")||serialized.includes("Charly"))throw new Error("Le rapport ne doit pas contenir les pseudos.");
   hostStream.abort();
+}
+
+async function testDuoWithoutAudienceAvatarVoice(){
+  const host=await post("/api/rooms",{name:"Ana",actorSlots:2});
+  const actor2=await post(`/api/rooms/${host.roomCode}/join`,{name:"Ben",role:"actor"});
+  await openStream(host);
+  const controller=new AbortController();streams.push(controller);
+  const response=await fetch(`${base}/api/rooms/${host.roomCode}/events?playerId=${actor2.playerId}&token=${actor2.token}`,{signal:controller.signal});
+  const reader=response.body.getReader();
+  let state=await command(host,"SET_AVATAR",{hat:"crown",outfit:"king",skin:"mint"});
+  if(state.me.avatar.hat!=="crown"||state.me.avatar.skin!=="mint")throw new Error("Le costume n'a pas été appliqué.");
+  let rejected=false;try{await command(host,"SET_AVATAR",{hat:"inconnu"});}catch{rejected=true;}if(!rejected)throw new Error("Un costume inconnu doit être refusé.");
+  for(const session of [host,actor2])await command(session,"TOGGLE_READY",{ready:true});
+  state=await command(host,"START_MATCH");if(state.phase!=="briefing")throw new Error("Un duo sans public doit pouvoir démarrer.");
+  await post(`/api/rooms/${host.roomCode}/voice`,{playerId:host.playerId,token:host.token,level:6});
+  const decoder=new TextDecoder();let received="";const deadline=Date.now()+2500;
+  while(!received.includes("event: voice")&&Date.now()<deadline){const chunk=await Promise.race([reader.read(),sleep(500).then(()=>null)]);if(chunk?.value)received+=decoder.decode(chunk.value);}
+  if(!received.includes("event: voice")||!received.includes(host.playerId))throw new Error("Le niveau de voix n'a pas été relayé.");
+  state=await command(host,"ADVANCE_PHASE");state=await command(host,"ADVANCE_PHASE");
+  rejected=false;try{await command(host,"SET_AVATAR",{hat:"none"});}catch{rejected=true;}if(!rejected)throw new Error("Le vestiaire doit être fermé pendant la scène.");
+  state=await command(host,"END_MATCH");if(state.phase!=="verdict"||state.verdict.audience!==null)throw new Error("Le verdict d'un duo sans public est incorrect.");
 }
 
 async function openStream(session){const controller=new AbortController();streams.push(controller);const response=await fetch(`${base}/api/rooms/${session.roomCode}/events?playerId=${session.playerId}&token=${session.token}`,{signal:controller.signal});if(!response.ok)throw new Error("SSE impossible");return controller;}

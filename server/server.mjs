@@ -11,25 +11,28 @@ const sceneRoot = join(projectRoot, "content/scenes-v3");
 const sceneFiles = (await readdir(sceneRoot)).filter((file) => file.endsWith(".json")).sort((a, b) => Number(!a.includes("tutorial")) - Number(!b.includes("tutorial")) || a.localeCompare(b));
 const scenes = await Promise.all(sceneFiles.map(async (file) => JSON.parse(await readFile(join(sceneRoot, file), "utf8"))));
 const reactions = JSON.parse(await readFile(join(projectRoot, "content/reactions.json"), "utf8"));
+const costumes = JSON.parse(await readFile(join(projectRoot, "content/costumes.json"), "utf8"));
 const clients = new Map();
+const lastVoice = new Map();
 const disconnectTimers = new Map();
 const port = Number(process.env.PORT || 4173);
 const host = process.env.HOST || "0.0.0.0";
 const publicUrl = (process.env.PUBLIC_URL || "").replace(/\/+$/, "");
 
-const engine = createEngine({ scenes, reactions, onBroadcast: (room) => broadcastRoom(room.code) });
+const engine = createEngine({ scenes, reactions, costumes, onBroadcast: (room) => broadcastRoom(room.code) });
 const mime = { ".html":"text/html; charset=utf-8", ".css":"text/css; charset=utf-8", ".js":"text/javascript; charset=utf-8", ".json":"application/json; charset=utf-8", ".svg":"image/svg+xml", ".png":"image/png", ".webmanifest":"application/manifest+json" };
 
 const server = createServer(async (req, res) => {
   try {
     const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
-    if (url.pathname === "/api/health" && req.method === "GET") return json(res, 200, { ok: true, rooms: engine.rooms.size, version: "0.3.2", scenes: scenes.length, publicUrl });
+    if (url.pathname === "/api/health" && req.method === "GET") return json(res, 200, { ok: true, rooms: engine.rooms.size, version: "0.3.2", scenes: scenes.length, publicUrl, lan: lanUrls() });
+    if (url.pathname === "/api/costumes" && req.method === "GET") return json(res, 200, costumes);
     if (url.pathname === "/api/rooms" && req.method === "POST") {
       const body = await bodyJson(req);
       const { room, player } = engine.createRoom(body.name, body.actorSlots);
       return json(res, 201, session(room, player));
     }
-    const match = url.pathname.match(/^\/api\/rooms\/([A-Z0-9]{5})(?:\/(join|reclaim|state|events|commands|report))?$/i);
+    const match = url.pathname.match(/^\/api\/rooms\/([A-Z0-9]{5})(?:\/(join|reclaim|state|events|commands|report|voice))?$/i);
     if (match) {
       const roomCode = match[1].toUpperCase();
       const action = match[2] || "public";
@@ -51,6 +54,12 @@ const server = createServer(async (req, res) => {
       if (action === "commands" && req.method === "POST") {
         const body = await bodyJson(req);
         return json(res, 200, engine.command(roomCode, body.playerId, body.token, body.type, body.payload));
+      }
+      if (action === "voice" && req.method === "POST") {
+        const body = await bodyJson(req);
+        const { player } = engine.authenticate(roomCode, body.playerId, body.token);
+        relayVoice(roomCode, player.id, body.level);
+        return json(res, 200, { ok: true });
       }
       if (action === "report" && req.method === "GET") {
         return json(res, 200, engine.report(roomCode, url.searchParams.get("playerId"), url.searchParams.get("token")));
@@ -92,6 +101,16 @@ function openEvents(req, res, roomCode, url) {
     disconnectTimers.set(key, timer);
   });
 }
+// Seul un niveau sonore (0–8) transite : aucun audio n'est envoyé ni enregistré.
+function relayVoice(roomCode, playerId, rawLevel) {
+  const level = Math.max(0, Math.min(8, Math.round(Number(rawLevel) || 0)));
+  const key = clientKey(roomCode, playerId);
+  const now = Date.now();
+  if (level > 0 && now - (lastVoice.get(key) || 0) < 60) return;
+  lastVoice.set(key, now);
+  const message = `event: voice\ndata: ${JSON.stringify({ p: playerId, l: level })}\n\n`;
+  for (const [otherKey, client] of clients) if (client.roomCode === roomCode && otherKey !== key) { try { client.res.write(message); } catch {} }
+}
 function broadcastRoom(roomCode) {
   for (const [key, client] of clients) {
     if (client.roomCode !== roomCode) continue;
@@ -132,6 +151,10 @@ async function staticFile(res, pathname) {
     res.writeHead(200, { "Content-Type": mime[".html"], "Cache-Control": "no-store" });
     res.end(content);
   }
+}
+function lanUrls() {
+  const rank = (address) => (/^(192\.168\.|10\.|172\.(1[6-9]|2\d|3[01])\.)/.test(address) ? 0 : 1);
+  return localAddresses().sort((a, b) => rank(a) - rank(b)).map((address) => `http://${address}:${port}`);
 }
 function localAddresses() {
   const values = [];

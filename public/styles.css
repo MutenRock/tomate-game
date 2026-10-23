@@ -332,6 +332,53 @@ blockquote { margin: 18px 0; padding: 4px 18px; border-left: 4px solid var(--gol
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .toast.error { background: #7d2025; color: #fff; }
 
+/* ---------- Personnage, garde-robe, scène ---------- */
+.avatar { display: block; width: 100%; height: auto; overflow: visible; }
+.avatar .mouth { transform-box: fill-box; transform-origin: 50% 0; transform: scale(calc(1 - var(--open, 0) * .12), calc(.1 + var(--open, 0) * .95)); }
+.avatar .smile { opacity: calc(1 - var(--open, 0) * 5); }
+.avatar .eyes { transform-box: fill-box; transform-origin: 50% 50%; animation: blink 4.6s infinite; }
+@keyframes blink { 0%, 94%, 100% { transform: scaleY(1); } 97% { transform: scaleY(.08); } }
+.avatar.talking { animation: talk-bob .28s ease-in-out infinite alternate; transform-origin: 50% 100%; }
+@keyframes talk-bob { to { transform: translateY(-3px) rotate(.8deg); } }
+.mini-avatar { flex: none; width: 36px; height: 40px; border-radius: 50%; background: #efe1cd; overflow: hidden; display: grid; place-items: center; }
+.mini-avatar .avatar { width: 100%; }
+
+.wardrobe { margin: 18px 0; padding: 16px; border: 2px dashed rgba(167, 47, 48, .4); border-radius: 16px; background: #fff7e9; }
+.wardrobe-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.wardrobe-head h3 { margin: 0; color: var(--velvet); }
+.wardrobe-head button { padding: 7px 11px; border: 1px solid var(--line); border-radius: 9px; background: #efe1cd; color: var(--ink); font-weight: 800; }
+.wardrobe-body { display: grid; grid-template-columns: 190px 1fr; gap: 18px; margin-top: 12px; }
+.wardrobe-preview { display: grid; gap: 10px; align-content: start; }
+.preview-avatar { padding: 12px 18px 6px; border-radius: 14px; background: radial-gradient(ellipse at 50% 110%, rgba(240, 189, 79, .5), transparent 65%), linear-gradient(#3a0d16, #22070d); box-shadow: inset 0 0 0 2px rgba(240, 189, 79, .4); }
+.wardrobe-options { display: grid; gap: 10px; align-content: start; }
+.opt-group > span { display: block; margin-bottom: 5px; font-size: .68rem; font-weight: 900; letter-spacing: .12em; text-transform: uppercase; color: var(--muted); }
+.opt-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.opt { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: #fff; color: var(--ink); font-size: .82rem; font-weight: 700; }
+.opt:hover { background: #f3e5cf; }
+.opt.selected { background: var(--velvet); border-color: var(--velvet); color: #fff; }
+.opt.swatch { width: 30px; height: 30px; padding: 0; border: 3px solid #fff; background: var(--c); box-shadow: 0 0 0 1px var(--line); }
+.opt.swatch.selected { border-color: var(--velvet); box-shadow: 0 0 0 2px #fff inset; }
+.mic-box { display: grid; gap: 6px; }
+.mic-box button, .mic-chip button { padding: 9px 11px; border: 1px solid var(--line); border-radius: 10px; background: #efe1cd; color: var(--ink); font-weight: 800; }
+.mic-box button.on, .mic-chip button.on { background: #dff1e4; border-color: #3ca56c; color: #174c32; }
+.mic-box small, .mic-chip span { color: var(--muted); font-size: .74rem; line-height: 1.35; }
+.meter { height: 8px; border-radius: 99px; background: #e6d8c2; overflow: hidden; }
+.meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #4fb04a, #f0bd4f, #e5382c); }
+.mic-chip { display: flex; align-items: center; flex-wrap: wrap; gap: 4px 10px; margin: 8px 0 0; }
+
+.stage-strip { display: flex; justify-content: center; align-items: flex-end; gap: clamp(14px, 5vw, 56px); margin: 12px 0; padding: 16px 10px 0; border-radius: 16px; border-bottom: 8px solid #5a3420; background: radial-gradient(ellipse at 50% 120%, rgba(240, 189, 79, .38), transparent 62%), linear-gradient(#3a0d16, #22070d); box-shadow: inset 0 0 0 2px rgba(240, 189, 79, .35); }
+.stage-actor { margin: 0; width: clamp(92px, 20vw, 150px); text-align: center; opacity: .72; transform: scale(.94); transition: opacity .25s, transform .25s; }
+.stage-actor.active { opacity: 1; transform: scale(1.03); filter: drop-shadow(0 0 14px rgba(240, 189, 79, .55)); }
+.stage-actor figcaption { margin: 2px 0 6px; color: #fff3dd; }
+.stage-actor figcaption b, .stage-actor figcaption span { display: block; }
+.stage-actor figcaption b { font-size: .9rem; }
+.stage-actor figcaption span { color: var(--gold); font-size: .72rem; font-weight: 800; letter-spacing: .06em; }
+
+@media (max-width: 640px) {
+  .wardrobe-body { grid-template-columns: 1fr; }
+  .preview-avatar { width: 150px; margin: 0 auto; }
+}
+
 /* ---------- Préférences de confort ---------- */
 html[data-motion="reduced"] *, html[data-motion="reduced"] *::before { animation: none !important; transition: none !important; }
 html[data-motion="reduced"] .rain { display: none; }
