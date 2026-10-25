@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.3.2 — Habillage, partie à distance et personnages
+
+- thème visuel « théâtre » (rideaux, marquise, cartes programme) et assets SVG ;
+- icônes de réactions, jauge de tomates, tâches de tomate animées ;
+- `npm run remote` : serveur + tunnel Cloudflare, lien public copié et vérifié ;
+- variable `PUBLIC_URL` et adresse réseau local dans le bouton « Copier le lien » ;
+- partie possible avec les comédiens seuls (verdict ramené sur 100, ligne Public « — ») ;
+- garde-robe d'avatars SVG par joueur (commande `SET_AVATAR`, fermée dès le début de la scène) ;
+- personnages des comédiens visibles sur scène, bouche pilotée par le niveau du micro (niveau 0–8 uniquement, aucun audio transmis), repli automatique sans micro ;
+- correction du smoke test sous Windows et nouveaux scénarios (garde-robe, duo sans public, relais de voix) ;
+- guide `docs/PLAYTEST_REMOTE.md`.
+
 ## 0.3.1 — Préparation des playtests
 
 - ajout d'une scène tutoriel guidée de deux à trois minutes ;

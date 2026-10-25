@@ -240,7 +240,7 @@ Ordre recommandé :
 4. noter les observations externes que le questionnaire ne capture pas ;
 5. répéter sur plusieurs groupes ;
 6. analyser les tendances ;
-7. corriger la v0.3.1 ;
+7. corriger la v0.3.2 ;
 8. décider ensuite du prochain axe majeur.
 
 ## Problèmes / limites connus

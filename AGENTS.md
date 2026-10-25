@@ -14,7 +14,7 @@ Le principe central n'est pas de jouer parfaitement : **une erreur doit créer u
 
 ## 2. État actuel
 
-Version active : **v0.3.1 — prototype playtest-ready**.
+Version active : **v0.3.2 — prototype playtest-ready**.
 
 Fonctionnel aujourd'hui :
 
@@ -36,7 +36,11 @@ Fonctionnel aujourd'hui :
 - feedback de fin de partie ;
 - export JSON de playtest anonymisé ;
 - lancement LAN ;
-- tunnel Cloudflare optionnel pour des tests distants.
+- tunnel Cloudflare optionnel pour des tests distants (`npm run remote`, variable `PUBLIC_URL`) ;
+- thème visuel « théâtre » et assets SVG (`public/assets/`) ;
+- partie possible avec les comédiens seuls (public facultatif) ;
+- garde-robe : un petit personnage SVG par joueur, habillable avant la scène ;
+- bouche du personnage pilotée par le niveau du micro (jamais d'audio transmis ; non testé avec un vrai micro, HTTPS ou localhost requis).
 
 Voir `docs/CURRENT_STATE.md` pour le détail.
 
@@ -84,7 +88,7 @@ Test distant Windows :
 start_windows_cloudflare.bat
 ```
 
-Le tunnel Cloudflare est uniquement un moyen de test. Les salles restent en mémoire du processus Node.
+Le tunnel Cloudflare (`npm run remote`, guide : `docs/PLAYTEST_REMOTE.md`) est uniquement un moyen de test. Les salles restent en mémoire du processus Node.
 
 ## 5. Architecture réellement utilisée
 
@@ -105,7 +109,7 @@ Le tunnel Cloudflare est uniquement un moyen de test. Les salles restent en mém
 
 - `content/scenes-v3/` : tutoriel et histoires actives ;
 - `content/reactions.json` : réactions actuelles ;
-- `content/scenes.json` : contenu plus ancien conservé pour historique / compatibilité, ne pas prendre comme source principale du contenu v0.3.1.
+- `content/scenes.json` : contenu plus ancien conservé pour historique / compatibilité, ne pas prendre comme source principale du contenu actif.
 
 ### Validation
 
@@ -174,7 +178,7 @@ Ces réponses servent à orienter les versions futures mais **ne remplacent pas 
 
 Ordre conseillé :
 
-1. faire plusieurs playtests humains de la v0.3.1 ;
+1. faire plusieurs playtests humains de la v0.3.2 ;
 2. conserver les rapports JSON exportés ;
 3. noter les problèmes de compréhension / rythme ;
 4. analyser les réponses de l'étude joueurs V2 lorsqu'un échantillon suffisant existe ;

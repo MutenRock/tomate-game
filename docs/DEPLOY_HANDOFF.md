@@ -8,14 +8,22 @@ dans l'écosystème Nitro / skill-arena.
 
 ## 1. Ce qu'est tomate-game
 
-Jeu multijoueur en temps réel : un animateur et une salle de joueurs votent
-sur des questions, l'animateur voit les résultats en direct.
+Jeu web multijoueur asymétrique de performance théâtrale chaotique : un ou
+deux comédiens lisent une histoire sous pression, un public sur téléphone les
+gêne ou les encourage avec des réactions limitées. Voir `AGENTS.md` et
+`docs/CURRENT_STATE.md`.
+
+> Correction (2026-10-25) : la première version de ce dossier décrivait à tort
+> le jeu comme « un animateur et une salle qui votent sur des questions ».
+> Seules les contraintes de déploiement ci-dessous restent valables.
 
 - Dépôt : `MutenRock/tomate-game`, branche `main`
 - Serveur : `server/server.mjs` — **processus Node.js persistant** (SSE + HTTP)
 - Client : fichiers HTML/CSS/JS servis statiquement par ce même serveur
 - Port par défaut : `4173`
 - Aucune base de données — état en mémoire, rooms éphémères
+- Le serveur lit aussi `content/` (histoires, réactions, costumes) : déployer le dépôt entier, pas seulement `public/`
+- Le micro (animation de la bouche) exige HTTPS : prévoir un domaine en TLS (nginx, Cloudflare)
 
 **Contrainte fondamentale** : tomate-game exige un processus Node.js vivant
 en permanence. Il n'est pas déployable sur un hébergement purement statique.
